@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "exportedAt": "2026-11-16T00:00:00.000Z",
+  "blueprints": [
+    {
+      "doc": {
+        "id": "ms-saas-launch",
+        "title": "个人 SaaS 上线里程碑",
+        "goal": "90 天内上线一个可收费的个人 SaaS，并获得前 10 个付费用户",
+        "nodes": [
+          {
+            "id": "ms-saas-scope",
+            "title": "范围与验收",
+            "sub": "目标用户、付费点、验收人",
+            "type": "milestone",
+            "desc": "一页纸写清目标用户、付费点、3 个必须功能、上线日期、验收人。",
+            "hours": 6,
+            "tier": 0,
+            "row": 0,
+            "resources": []
+          },
+          {
+            "id": "ms-saas-mvp",
+            "title": "MVP 可演示",
+            "sub": "核心流程 + 3 分钟 demo",
+            "type": "project",
+            "desc": "核心流程可跑通，能录一段 3 分钟 demo，覆盖从进入到拿到结果的完整路径。",
+            "hours": 40,
+            "tier": 1,
+            "row": 0,
+            "resources": []
+          },
+          {
+            "id": "ms-saas-auth",
+            "title": "登录与计费",
+            "sub": "注册、登录、订阅",
+            "type": "project",
+            "desc": "注册/登录/订阅可用，测试账号能完成一次付费，失败路径有提示。",
+            "hours": 24,
+            "tier": 2,
+            "row": 0,
+            "resources": []
+          },
+          {
+            "id": "ms-saas-beta",
+            "title": "内测反馈",
+            "sub": "10 个真实用户",
+            "type": "checkpoint",
+            "desc": "10 个真实用户试用，收集并排序前 5 个问题；至少修掉 2 个阻塞问题。",
+            "hours": 8,
+            "tier": 3,
+            "row": 0,
+            "resources": []
+          },
+          {
+            "id": "ms-saas-launch",
+            "title": "正式上线",
+            "sub": "域名、监控、备份、付费",
+            "type": "milestone",
+            "desc": "域名/监控/备份就绪，公开可访问，有 1 个付费用户。",
+            "hours": 8,
+            "tier": 4,
+            "row": 0,
+            "resources": []
+          },
+          {
+            "id": "ms-saas-retention",
+            "title": "30 天留存",
+            "sub": "周活与复盘",
+            "type": "milestone",
+            "desc": "30 天后仍有 ≥50% 周活，写出留存/流失原因复盘和下一步计划。",
+            "hours": 16,
+            "tier": 5,
+            "row": 0,
+            "resources": []
+          }
+        ],
+        "edges": [
+          { "id": "ms-saas-e1", "from": "ms-saas-scope", "to": "ms-saas-mvp", "kind": "hard" },
+          { "id": "ms-saas-e2", "from": "ms-saas-mvp", "to": "ms-saas-auth", "kind": "hard" },
+          { "id": "ms-saas-e3", "from": "ms-saas-auth", "to": "ms-saas-beta", "kind": "hard" },
+          { "id": "ms-saas-e4", "from": "ms-saas-beta", "to": "ms-saas-launch", "kind": "hard" },
+          { "id": "ms-saas-e5", "from": "ms-saas-launch", "to": "ms-saas-retention", "kind": "hard" }
+        ]
+      },
+      "progress": {
+        "nodes": {
+          "ms-saas-scope": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "ms-saas-mvp": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "ms-saas-auth": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "ms-saas-beta": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "ms-saas-launch": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "ms-saas-retention": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          }
+        },
+        "pos": {}
+      }
+    }
+  ]
+}

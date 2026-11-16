@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <body>
+    <div id="out">start</div>
+    <script>
+      const out = document.getElementById("out");
+      const log = (m) => {
+        out.innerHTML += "<br>" + m;
+      };
+      try {
+        const req = indexedDB.open("probe", 1);
+        req.onupgradeneeded = () => req.result.createObjectStore("s");
+        req.onsuccess = () => log("IDB_OPEN_OK");
+        req.onerror = () => log("IDB_OPEN_ERR " + req.error);
+        req.onblocked = () => log("IDB_BLOCKED");
+      } catch (e) {
+        log("THROW " + e.message);
+      }
+      setTimeout(() => log("TIMEOUT_3S"), 3000);
+    </script>
+  </body>
+</html>

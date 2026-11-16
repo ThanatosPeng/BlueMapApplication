@@ -1,0 +1,36 @@
+# ===== 依赖与构建产物 =====
+node_modules/
+dist/
+dist-ssr/
+release/
+
+# ===== 测试产物 =====
+test-results/
+playwright-report/
+coverage/
+
+# ===== 本地环境变量 =====
+.env*
+!.env.example
+*.local
+
+# ===== 运行时数据（应用会往这些目录写 bluemap.json / Chromium profile） =====
+data/
+.electron-userdata/
+.bluemap-userdata/
+.electron-persist-test/
+.pack-profile/
+
+# ===== 调试与临时文件 =====
+*.log
+.pack-*.txt
+.diag-*.txt
+.vitest-out.json
+.skill-docs/
+
+# ===== 技能包副本 =====
+# 真正生效的 skill 在 .dsh/skills/（已纳入版本库）；
+# 根目录这份是生成时的副本，不需要提交。
+/skills/
+
+# 说明：DESIGN.md / PROGRESS.md / TECH-STACK.md 属项目资产，正常提交，不忽略。

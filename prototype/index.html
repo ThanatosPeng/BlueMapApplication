@@ -1,0 +1,1881 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>BlueMap · 学习蓝图</title>
+<style>
+/* ============ tokens ============ */
+:root{
+  --bg:#070d18; --panel:rgba(18,27,44,.74); --line:rgba(120,160,220,.14);
+  --txt:#e8eefb; --muted:#8fa2bd; --dim:#5b6b85;
+  --lock:#4b5a74; --avail:#38bdf8; --learn:#f59e0b; --master:#fbbf24; --review:#f472b6;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--txt); background:var(--bg); overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:rgba(120,160,220,.2);border-radius:6px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:rgba(120,160,220,.35);background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
+
+.app{height:100vh;display:grid;grid-template-rows:60px 1fr;min-height:0}
+
+/* ============ topbar ============ */
+.topbar{
+  display:flex;align-items:center;gap:16px;padding:0 18px;
+  border-bottom:1px solid var(--line);
+  background:rgba(10,16,28,.78);backdrop-filter:blur(16px);z-index:20;
+}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:15px;letter-spacing:.4px;white-space:nowrap}
+.brand .mark{width:22px;height:22px;filter:drop-shadow(0 0 8px rgba(56,189,248,.5))}
+.brand small{font-size:10px;font-weight:500;color:var(--dim);letter-spacing:1.4px;text-transform:uppercase;margin-left:2px}
+.tabs{display:flex;gap:4px;padding:4px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.05)}
+.tab{
+  display:flex;align-items:center;gap:7px;border:none;cursor:pointer;background:transparent;
+  color:var(--muted);font-size:12.5px;padding:6px 11px;border-radius:9px;transition:.18s;
+}
+.tab:hover{color:#cfdcee}
+.tab.on{background:rgba(56,189,248,.14);color:#cfeaff;box-shadow:inset 0 0 0 1px rgba(56,189,248,.32)}
+.tab .dot{width:5px;height:5px;border-radius:50%;background:#38bdf8;box-shadow:0 0 6px #38bdf8}
+.spacer{flex:1}
+.search{position:relative;display:flex;align-items:center}
+.search svg{position:absolute;left:10px;width:13px;height:13px;stroke:var(--dim);fill:none;stroke-width:1.8}
+.search input{
+  width:216px;padding:8px 12px 8px 30px;border-radius:10px;font-size:12.5px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);color:var(--txt);outline:none;transition:.18s;
+}
+.search input::placeholder{color:#5f7191}
+.search input:focus{border-color:rgba(56,189,248,.55);background:rgba(56,189,248,.06);width:250px}
+.level{display:flex;align-items:center;gap:9px;padding:6px 12px;border-radius:11px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.22)}
+.level .lv{font-size:12px;font-weight:700;color:#fbbf24;letter-spacing:.4px}
+.level .bar{width:78px;height:5px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden}
+.level .bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#f59e0b,#fbbf24);transition:width .5s cubic-bezier(.22,.8,.24,1)}
+.level .xp{font-size:10.5px;color:#b49451;font-variant-numeric:tabular-nums}
+
+/* ============ layout ============ */
+.main{display:grid;grid-template-columns:316px 1fr;min-height:0}
+.rail{
+  padding:14px;display:flex;flex-direction:column;gap:11px;overflow-y:auto;
+  border-right:1px solid var(--line);background:rgba(9,14,24,.55);
+}
+.card{
+  border:1px solid rgba(120,160,220,.12);border-radius:var(--radius);padding:14px;
+  background:linear-gradient(180deg,rgba(23,33,53,.72),rgba(14,21,35,.72));
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset;
+}
+.card-head{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:.8px;color:#9db0cb;text-transform:uppercase;margin-bottom:10px}
+.card-head .pill{margin-left:auto;font-size:10.5px;letter-spacing:0;padding:1px 7px;border-radius:99px;background:rgba(251,191,36,.14);color:#fbbf24;text-transform:none}
+.card-head .tag{margin-left:auto;font-size:9.5px;letter-spacing:.4px;padding:2px 6px;border-radius:6px;background:rgba(56,189,248,.12);color:#7dd3fc;text-transform:none;font-weight:600}
+.hero{display:flex;gap:14px;align-items:center}
+.hero-meta{min-width:0}
+.hero-title{font-size:15px;font-weight:650;margin:0 0 3px}
+.hero-goal{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:6px}
+.hero-sub{font-size:10.5px;color:var(--dim)}
+.ring .ring-bg{fill:none;stroke:rgba(255,255,255,.07);stroke-width:6}
+.ring .ring-fg{fill:none;stroke:url(#ringGrad);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.22,.8,.24,1)}
+.ring text{fill:#e8eefb;font-size:15px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-variant-numeric:tabular-nums}
+
+.rec-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.rec{display:flex;align-items:center;gap:9px;padding:8px;border-radius:10px;cursor:pointer;border:1px solid transparent;background:rgba(255,255,255,.02);transition:.15s}
+.rec:hover{background:rgba(56,189,248,.09);border-color:rgba(56,189,248,.22)}
+.rec-rank{flex:none;width:18px;height:18px;border-radius:6px;display:grid;place-items:center;background:rgba(56,189,248,.14);color:#7dd3fc;font-size:10.5px;font-weight:700}
+.rec-body{min-width:0;flex:1}
+.rec-title{font-size:12.5px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-why{font-size:10.5px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-arrow{color:var(--dim);font-size:14px}
+
+.due-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.due-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#cbd7ea}
+.due-item .bd{width:5px;height:5px;border-radius:50%;background:var(--review);box-shadow:0 0 6px var(--review);flex:none}
+.due-item span{color:var(--dim);font-size:10.5px;margin-left:auto}
+.muted{color:var(--muted)}
+.small{font-size:11px;line-height:1.6}
+.empty{font-size:11.5px;color:var(--dim);padding:6px 0}
+
+.btn{
+  width:100%;padding:9px 12px;border-radius:10px;font-size:12.5px;cursor:pointer;
+  border:1px solid transparent;transition:.16s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn.primary{background:linear-gradient(180deg,#38bdf8,#0ea5e9);color:#04121f;font-weight:650}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:#cbd7ea}
+.btn.ghost:hover{background:rgba(255,255,255,.08)}
+.btn.danger{background:rgba(244,63,94,.12);border-color:rgba(244,63,94,.3);color:#fda4af}
+.btn.danger:hover{background:rgba(244,63,94,.2)}
+.link{background:none;border:none;color:#7dd3fc;font-size:11.5px;cursor:pointer;padding:0}
+.link:hover{text-decoration:underline}
+.rail-foot{margin-top:auto;padding-top:8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+/* ============ stage ============ */
+.work{position:relative;min-width:0;overflow:hidden}
+.stage{
+  position:absolute;inset:0;overflow:hidden;
+  background:
+    radial-gradient(900px 520px at 58% -8%, rgba(56,189,248,.075), transparent 62%),
+    radial-gradient(700px 500px at 8% 108%, rgba(168,85,247,.05), transparent 60%),
+    linear-gradient(rgba(148,183,255,.042) 1px, transparent 1px) 0 0/34px 34px,
+    linear-gradient(90deg, rgba(148,183,255,.042) 1px, transparent 1px) 0 0/34px 34px,
+    #070d18;
+  cursor:grab;
+}
+.stage.grabbing{cursor:grabbing}
+.stage::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 45%, transparent 45%, rgba(4,8,15,.55) 100%);
+}
+#canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* nodes */
+.node{cursor:pointer;transition:opacity .2s ease}
+.node .box{fill:#0e1728;stroke:#26354e;stroke-width:1.3;transition:stroke .2s,fill .2s,stroke-width .2s}
+.node .ttl{fill:#dfe8f7;font-size:14px;font-weight:600;letter-spacing:.2px}
+.node .sub{fill:#7e90ab;font-size:10.5px}
+.node .dot{fill:#22304a;transition:fill .2s}
+.node .accent{opacity:.95}
+.node .glyph-c{fill:#0b1220;font-size:10px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+.node .padlock{fill:none;stroke:#3f4f6b;stroke-width:1.3;stroke-linecap:round}
+.node:hover .box{stroke-width:1.9}
+.node.st-locked{cursor:default}
+.node.st-locked .box{fill:#0a111d;stroke:#22304a;stroke-dasharray:4 4}
+.node.st-locked .ttl{fill:#5f7191}
+.node.st-locked .sub{fill:#455470}
+.node.st-available .box{fill:#0b2133;stroke:var(--avail);stroke-width:1.5}
+.node.st-available{filter:drop-shadow(0 0 9px rgba(56,189,248,.4))}
+.node.st-learning .box{fill:#1b1508;stroke:var(--learn)}
+.node.st-learning .dot.on{fill:var(--learn)}
+.node.st-mastered .box{fill:#1d1706;stroke:var(--master);stroke-width:1.7}
+.node.st-mastered{filter:drop-shadow(0 0 13px rgba(251,191,36,.3))}
+.node.st-mastered .dot.on{fill:var(--master)}
+.node.st-review .box{fill:#1d1706;stroke:var(--review);stroke-width:1.6;stroke-dasharray:6 4}
+.node.st-review{filter:drop-shadow(0 0 12px rgba(244,114,182,.28))}
+.node.st-review .dot.on{fill:var(--review)}
+.node.sel .selring{opacity:1}
+.selring{fill:none;stroke:#dbeafe;stroke-width:1.2;opacity:0;transition:opacity .16s}
+.node.dim{opacity:.14}
+.node.dim .box{pointer-events:none}
+.node.match .box{stroke:#e2e8f5}
+.halo{fill:none;stroke:var(--avail);stroke-width:1.2;opacity:0;animation:pulse 2.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0}50%{opacity:.5}}
+.prog-track{fill:rgba(255,255,255,.08)}
+.prog-fill{fill:var(--learn)}
+
+/* edges */
+.edge{fill:none;stroke:#22304a;stroke-width:1.6;stroke-dasharray:3 6;transition:stroke .25s,opacity .25s}
+.edge.on{stroke:var(--master);opacity:.5;stroke-dasharray:5 7;animation:flow 3.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-24}}
+
+/* ripple */
+.ripple{fill:none;stroke:var(--master);stroke-width:2;transform-box:fill-box;transform-origin:center;animation:ripple .95s ease-out forwards}
+@keyframes ripple{from{opacity:.95;transform:scale(.55)}to{opacity:0;transform:scale(1.75)}}
+
+/* stage chrome */
+.tools{
+  position:absolute;left:16px;bottom:16px;z-index:6;display:flex;align-items:center;gap:2px;padding:4px;
+  background:rgba(12,19,32,.82);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:13px;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);
+}
+.tool{
+  width:30px;height:30px;display:grid;place-items:center;border:none;background:transparent;color:#a9bbd4;
+  border-radius:8px;cursor:pointer;font-size:13px;transition:.15s;
+}
+.tool:hover{background:rgba(255,255,255,.08);color:#e8eefb}
+.tool.on{background:rgba(56,189,248,.16);color:#7dd3fc;box-shadow:inset 0 0 0 1px rgba(56,189,248,.35)}
+.zoom-label{width:46px;text-align:center;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sep{width:1px;height:18px;background:rgba(255,255,255,.09);margin:0 3px}
+
+.legend{
+  position:absolute;right:16px;bottom:16px;z-index:6;padding:10px 12px;border-radius:13px;
+  background:rgba(12,19,32,.82);backdrop-filter:blur(14px);border:1px solid var(--line);
+  display:grid;grid-template-columns:auto auto;gap:6px 14px;font-size:10.5px;color:#a9bbd4;
+}
+.legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.hint{
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:6;
+  padding:7px 14px;border-radius:99px;font-size:11.5px;color:#bfd4ef;
+  background:rgba(12,19,32,.82);backdrop-filter:blur(12px);border:1px solid var(--line);
+  animation:fadeIn .5s ease .4s both;transition:opacity .4s;
+}
+.hint.hide{opacity:0;pointer-events:none}
+@keyframes fadeIn{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ============ inspector ============ */
+.inspector{
+  position:absolute;top:0;right:0;height:100%;width:410px;z-index:12;
+  transform:translateX(103%);transition:transform .26s cubic-bezier(.22,.8,.24,1);
+  background:rgba(11,18,30,.94);backdrop-filter:blur(20px);
+  border-left:1px solid rgba(120,160,220,.16);overflow-y:auto;padding:16px 18px 44px;
+  box-shadow:-30px 0 70px rgba(0,0,0,.35);
+}
+.inspector.open{transform:none}
+.i-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.chip{font-size:10px;letter-spacing:.6px;padding:3px 8px;border-radius:7px;background:rgba(255,255,255,.06);color:#a9bbd4;border:1px solid rgba(255,255,255,.07)}
+.i-close{margin-left:auto;width:26px;height:26px;display:grid;place-items:center;border:none;border-radius:8px;background:rgba(255,255,255,.05);color:#a9bbd4;cursor:pointer;font-size:12px}
+.i-close:hover{background:rgba(255,255,255,.1);color:#fff}
+.i-title{font-size:19px;font-weight:650;margin:0 0 5px;line-height:1.3}
+.i-sub{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+.i-desc{font-size:12px;color:#b9c8de;line-height:1.75;padding:11px 12px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);margin-bottom:16px}
+.sec{margin-bottom:18px}
+.sec-t{font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;color:#7d90ab;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.sec-t .line{flex:1;height:1px;background:rgba(255,255,255,.06)}
+.mastery-row{display:flex;gap:4px}
+.mbtn{flex:1;padding:7px 0 6px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#8fa2bd;font-size:9.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:.15s}
+.mbtn b{font-size:13px;color:#cddcf0;font-weight:650}
+.mbtn:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06)}
+.mbtn.on{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.5);color:#fde68a}
+.mbtn.on b{color:#fbbf24}
+.i-hint{font-size:10.5px;color:var(--dim);margin-top:8px;line-height:1.6}
+.ev-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ev{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:9px;font-size:11.5px;cursor:pointer;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);color:#a9bbd4;transition:.15s}
+.ev:hover{background:rgba(255,255,255,.06)}
+.ev .boxc{width:13px;height:13px;border-radius:4px;border:1.4px solid rgba(255,255,255,.2);display:grid;place-items:center;font-size:9px;color:transparent;flex:none}
+.ev.on{border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.1);color:#a7f3d0}
+.ev.on .boxc{background:#34d399;border-color:#34d399;color:#04121f}
+.rel-list{display:flex;flex-direction:column;gap:3px}
+.rel{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;font-size:11.5px;cursor:pointer;color:#b9c8de;background:transparent;border:none;text-align:left;width:100%}
+.rel:hover{background:rgba(255,255,255,.05)}
+.rel i{width:6px;height:6px;border-radius:50%;flex:none}
+.rel .arrow{margin-left:auto;color:var(--dim);font-size:11px}
+.rel.empty-rel{color:var(--dim);cursor:default;font-size:11px}
+.note-area{width:100%;min-height:96px;padding:10px 11px;border-radius:11px;resize:vertical;
+  background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.07);color:#dbe6f7;font-size:12.5px;line-height:1.65;
+  font-family:ui-monospace,"SFMono-Regular",Consolas,"PingFang SC",monospace;outline:none;transition:.15s}
+.note-area:focus{border-color:rgba(56,189,248,.45)}
+.save-tip{font-size:10px;color:#34d399;height:12px;margin-top:4px;opacity:0;transition:opacity .3s}
+.save-tip.show{opacity:1}
+.res-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px}
+.res-item .rk{font-size:9.5px;padding:2px 5px;border-radius:5px;background:rgba(56,189,248,.12);color:#7dd3fc;flex:none}
+.res-item a{color:#a9d8f5;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res-item a:hover{text-decoration:underline}
+.res-form{display:flex;gap:5px;margin-top:8px}
+.res-form input{min-width:0;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.07);color:#dbe6f7;font-size:11.5px;outline:none}
+.res-form input.l{flex:1}.res-form input.u{flex:1.4}
+.res-form button{padding:6px 10px;border-radius:8px;border:1px solid rgba(56,189,248,.3);background:rgba(56,189,248,.14);color:#7dd3fc;cursor:pointer;font-size:12px}
+.actions{display:flex;flex-direction:column;gap:7px;margin-top:4px}
+.row2{display:flex;gap:7px}
+
+/* ============ modal ============ */
+.modal{position:fixed;inset:0;z-index:80;display:none}
+.modal.show{display:block}
+.modal .backdrop{position:absolute;inset:0;background:rgba(3,7,14,.74);backdrop-filter:blur(7px)}
+.modal .wrap{position:absolute;inset:0;display:grid;place-items:center;padding:24px;pointer-events:none}
+.modal-card{
+  pointer-events:auto;width:min(560px,100%);max-height:86vh;overflow-y:auto;padding:22px;border-radius:20px;
+  background:linear-gradient(180deg,#151f33,#0c1422);border:1px solid rgba(120,160,220,.2);
+  box-shadow:0 40px 90px rgba(0,0,0,.65);animation:pop .22s cubic-bezier(.22,.8,.24,1);
+}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.m-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.m-head h3{margin:0;font-size:17px;font-weight:650}
+.kicker{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:#7dd3fc;margin-bottom:5px}
+.m-close{margin-left:auto;width:28px;height:28px;border-radius:9px;border:none;background:rgba(255,255,255,.06);color:#a9bbd4;cursor:pointer}
+.m-close:hover{background:rgba(255,255,255,.12)}
+.q{font-size:17px;font-weight:600;line-height:1.55;margin:6px 0 10px}
+.q-hint{font-size:12px;color:var(--muted);line-height:1.75;padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);margin-bottom:18px}
+.ans{display:flex;flex-direction:column;gap:7px}
+.ans button{padding:10px;border-radius:11px;border:1px solid;cursor:pointer;font-size:12.5px;font-weight:550;transition:.15s;background:transparent}
+.ans .no{border-color:rgba(244,63,94,.32);color:#fda4af}.ans .no:hover{background:rgba(244,63,94,.13)}
+.ans .mid{border-color:rgba(245,158,11,.32);color:#fcd34d}.ans .mid:hover{background:rgba(245,158,11,.13)}
+.ans .yes{border-color:rgba(56,189,248,.32);color:#7dd3fc}.ans .yes:hover{background:rgba(56,189,248,.13)}
+.m-foot{display:flex;gap:8px;margin-top:18px}
+.m-foot .btn{width:auto;flex:1}
+.progressbar{height:4px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:16px}
+.progressbar i{display:block;height:100%;background:linear-gradient(90deg,#f472b6,#fbbf24);transition:width .3s}
+.sug{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.sug-item{display:flex;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+.sug-item .ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:13px;flex:none;background:rgba(56,189,248,.14);color:#7dd3fc}
+.sug-item b{display:block;font-size:12.5px;margin-bottom:3px}
+.sug-item p{margin:0;font-size:11.5px;color:var(--muted);line-height:1.6}
+.demo-note{font-size:10.5px;color:#b49451;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:9px;padding:8px 10px;line-height:1.6}
+
+/* AI 设置与输出 */
+.field{margin-bottom:10px}
+.field label{display:block;font-size:10px;letter-spacing:.8px;color:#7d90ab;margin-bottom:5px;text-transform:uppercase}
+.field input{width:100%;padding:9px 11px;border-radius:10px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.08);color:#dbe6f7;font-size:12px;outline:none;transition:.15s;font-family:ui-monospace,Consolas,monospace}
+.field input:focus{border-color:rgba(56,189,248,.5)}
+.ai-status{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#a9bbd4;padding:8px 11px;border-radius:9px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);margin-bottom:12px}
+.ai-status .led{width:7px;height:7px;border-radius:50%;background:#4b5a74;flex:none}
+.ai-status.on .led{background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.7)}
+.ai-out{font-size:12px;line-height:1.9;color:#cfdcee;padding:11px 12px;border-radius:10px;background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.16);margin-top:12px}
+.ai-err{font-size:11.5px;line-height:1.75;color:#fda4af;padding:10px 12px;border-radius:10px;background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25);margin-top:12px}
+.topbar .tool{width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+
+/* ============ toast ============ */
+.toasts{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:100;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{
+  display:flex;align-items:center;gap:9px;padding:9px 15px;border-radius:12px;font-size:12.5px;
+  background:rgba(16,25,41,.95);border:1px solid rgba(120,160,220,.22);color:#dbe6f7;
+  box-shadow:0 14px 40px rgba(0,0,0,.5);animation:tin .25s cubic-bezier(.22,.8,.24,1);
+}
+.toast.out{animation:tout .3s ease forwards}
+.toast .i{width:19px;height:19px;border-radius:6px;display:grid;place-items:center;font-size:10px;flex:none}
+.toast.gold .i{background:rgba(251,191,36,.2);color:#fbbf24}
+.toast.cyan .i{background:rgba(56,189,248,.2);color:#38bdf8}
+.toast.pink .i{background:rgba(244,114,182,.2);color:#f472b6}
+@keyframes tin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateY(-6px)}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+@media (max-width:1180px){
+  .main{grid-template-columns:268px 1fr}
+  .search input{width:150px}
+  .inspector{width:376px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 24 24"><defs><linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><path d="M12 1.8 21 7v10l-9 5.2L3 17V7z" fill="none" stroke="url(#bg1)" stroke-width="1.6"/><path d="M12 6.4 16.8 9v5.2L12 16.9 7.2 14.2V9z" fill="url(#bg1)" opacity=".55"/></svg>
+      BlueMap <small>beta</small>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="spacer"></div>
+    <label class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      <input id="search" type="search" placeholder="搜索节点  /" autocomplete="off" spellcheck="false">
+    </label>
+    <div class="level" id="levelChip"></div>
+    <button class="tool" data-action="settings" title="设置 · AI 接入" aria-label="设置">⚙</button>
+  </header>
+
+  <div class="main">
+    <aside class="rail" id="rail"></aside>
+    <div class="work">
+      <main class="stage" id="stage">
+        <svg id="canvas" aria-label="学习蓝图星图"><g id="viewport"></g></svg>
+        <div class="hint" id="hint">点击任意节点查看详情 · 滚轮缩放 · 拖拽平移</div>
+        <div class="tools" id="tools">
+          <button class="tool" data-action="zoom-out" title="缩小">−</button>
+          <div class="zoom-label" id="zoomLabel">100%</div>
+          <button class="tool" data-action="zoom-in" title="放大">＋</button>
+          <div class="sep"></div>
+          <button class="tool" data-action="fit" title="适配视图 (F)">⤢</button>
+          <button class="tool" data-action="edit" id="editBtn" title="编辑模式 (E)">✎</button>
+        </div>
+        <div class="legend" id="legend">
+          <div><i style="background:#4b5a74"></i>锁定</div>
+          <div><i style="background:#38bdf8"></i>可学</div>
+          <div><i style="background:#f59e0b"></i>学习中</div>
+          <div><i style="background:#fbbf24"></i>已掌握</div>
+          <div><i style="background:#f472b6"></i>待复习</div>
+          <div><i style="background:#2b3650;border:1px dashed #4b5a74"></i>未满足依赖</div>
+        </div>
+      </main>
+      <aside class="inspector" id="inspector"></aside>
+    </div>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+<div class="modal" id="modal"><div class="backdrop" data-action="close-modal"></div><div class="wrap"><div id="modalCard"></div></div></div>
+
+<script>
+"use strict";
+const SVGNS = "http://www.w3.org/2000/svg";
+const LS_KEY = "bluemap.proto.v1";
+const NODE_W = 186, NODE_H = 74;
+const COL_GAP = 234, ROW_GAP = 112, PAD_X = 120, PAD_Y = 90;
+const DAY = 864e5;
+
+const TYPE = {
+  concept:{label:"概念", color:"#60a5fa"},
+  skill:{label:"技能", color:"#34d399"},
+  practice:{label:"练习", color:"#a78bfa"},
+  project:{label:"项目", color:"#fb923c"},
+  milestone:{label:"里程碑", color:"#fbbf24"},
+  resource:{label:"资源", color:"#94a3b8"},
+  checkpoint:{label:"检查点", color:"#f472b6"}
+};
+const MLABEL = ["未知","接触","理解","应用","迁移","教学"];
+const MHINT = [
+  "还没开始。点下方「开始学习」把它变成学习中。",
+  "看过、听过，但还说不清。先补一个最小可运行例子。",
+  "能用自己的话解释核心概念了，但还不会动手。",
+  "能在给定场景下独立做对。到 4 级才算真正点亮。",
+  "换个新场景、新项目仍然能用 —— 这才是节点该有的终点。",
+  "能讲给别人听并回答追问。可以把这条经验写成笔记。"
+];
+
+/* ================= data ================= */
+const BLUEPRINTS = [
+{
+  id:"se", title:"软件工程", goal:"能独立交付一个上线产品",
+  nodes:[
+    {id:"prog-basic",title:"编程入门",sub:"Python 语法与思维方式",type:"concept",tier:0,row:0,hours:20,init:5,dueIn:12,
+     desc:"变量、流程控制、函数、模块与类的最小闭环。真正要学会的是把模糊需求拆成可执行步骤，而不是背语法。",
+     res:[["Python 官方教程","https://docs.python.org/zh-cn/3/tutorial/"],["《Python Crash Course》","#"]]},
+    {id:"cs-fund",title:"计算机系统",sub:"程序如何跑在硬件上",type:"concept",tier:0,row:1.9,hours:16,init:3,dueIn:null,
+     desc:"CPU、内存、磁盘、系统调用。知道一行代码从键盘到屏幕经过了什么，调试时才发现自己的直觉一直在骗你。",
+     res:[["《深入理解计算机系统》","#"],["Nand2Tetris","https://www.nand2tetris.org/"]]},
+    {id:"math-disc",title:"离散数学",sub:"逻辑、集合、图论",type:"concept",tier:0,row:3.6,hours:24,init:2,dueIn:null,
+     desc:"逻辑推理、集合、关系、图论。它是算法与系统设计的语言，学得越晚，后面越容易靠背结论。",
+     res:[["MIT 6.042J","https://ocw.mit.edu/"]]},
+
+    {id:"oop",title:"面向对象与设计",sub:"抽象、封装、组合",type:"concept",tier:1,row:0,hours:12,init:4,dueIn:0,
+     desc:"类不是把函数装进文件夹。重点是抽象边界：什么该暴露、什么该隐藏、什么时候该用组合而不是继承。",
+     res:[["《Head First 设计模式》","#"]]},
+    {id:"debug",title:"调试与读源码",sub:"断点、日志、最小复现",type:"practice",tier:1,row:1.1,hours:10,init:4,dueIn:0,
+     desc:"把「为什么会这样」拆成可验证的假设。最小复现的能力，直接决定你解决问题的速度。",
+     res:[["Chrome DevTools 文档","https://developer.chrome.com/docs/devtools/"]]},
+    {id:"ds",title:"数据结构",sub:"数组、树、哈希、图",type:"concept",tier:1,row:2.3,hours:30,init:3,dueIn:null,
+     desc:"不同的数据组织方式决定了操作的成本。重点是能根据场景选结构，而不是默写链表反转。",
+     res:[["《算法（第4版）》","#"],["Visualgo 可视化","https://visualgo.net/"]]},
+    {id:"git",title:"Git 与协作",sub:"分支、合并、PR 流程",type:"practice",tier:1,row:3.5,hours:8,init:5,dueIn:5,
+     desc:"版本控制不只是备份。分支模型、提交粒度、冲突处理，直接反映你对「协作」的理解。",
+     res:[["Pro Git 中文版","https://git-scm.com/book/zh/v2"]]},
+    {id:"cli",title:"命令行与 Linux",sub:"shell、文件、进程",type:"practice",tier:1,row:4.6,hours:10,init:2,dueIn:null,
+     desc:"管道、权限、进程、环境变量。服务器上排障时，命令行是你唯一确定还在的东西。",
+     res:[["《鸟哥的 Linux 私房菜》","#"]]},
+
+    {id:"test",title:"单元测试与 TDD",sub:"可验证的设计",type:"practice",tier:2,row:0.2,hours:10,init:4,dueIn:3,
+     desc:"测试不是给领导看的覆盖率，而是让你敢改代码的底气。先写测试会逼你把接口设计清楚。",
+     res:[["《测试驱动开发》","#"]]},
+    {id:"algo",title:"算法与复杂度",sub:"排序、DP、贪心",type:"concept",tier:2,row:1.6,hours:40,init:0,dueIn:null,
+     desc:"复杂度分析让你预判代价，经典算法提供可复用的思路模板。重点在「为什么这样更快」。",
+     res:[["LeetCode 题单","https://leetcode.cn/"],["《算法导论》","#"]]},
+    {id:"db",title:"数据库原理",sub:"关系模型、SQL、索引",type:"concept",tier:2,row:2.6,hours:20,init:0,dueIn:null,
+     desc:"索引为什么快、事务为什么必要、慢查询怎么定位。会写 SQL 和会设计表是两件事。",
+     res:[["《数据库系统概念》","#"]]},
+    {id:"net",title:"计算机网络",sub:"TCP/IP、HTTP、DNS",type:"concept",tier:2,row:3.6,hours:18,init:0,dueIn:null,
+     desc:"一个请求从浏览器到服务器要过几道关。抓过包之后，很多「玄学 bug」会立刻变得可以解释。",
+     res:[["《计算机网络：自顶向下》","#"],["Wireshark","https://www.wireshark.org/"]]},
+    {id:"os",title:"操作系统",sub:"进程、内存、文件系统",type:"concept",tier:2,row:4.6,hours:24,init:0,dueIn:null,
+     desc:"进程调度、虚拟内存、IO 模型。它是性能问题与并发问题的最终解释层。",
+     res:[["《操作系统导论》","#"]]},
+
+    {id:"fe",title:"Web 前端开发",sub:"组件、状态、渲染",type:"skill",tier:3,row:0.4,hours:30,init:0,dueIn:null,
+     desc:"从静态页面到有状态的应用。理解渲染与数据流，比多记几个 API 重要得多。",
+     res:[["MDN Web 文档","https://developer.mozilla.org/zh-CN/"]]},
+    {id:"dp",title:"设计模式",sub:"常见问题的解法",type:"concept",tier:3,row:1.5,hours:14,init:0,dueIn:null,
+     desc:"模式是别人踩坑后的命名。先遇到问题再学模式，否则只会把简单代码写成迷宫。",
+     res:[["Refactoring.Guru","https://refactoringguru.cn/"]]},
+    {id:"api",title:"后端与 API",sub:"路由、鉴权、持久化",type:"skill",tier:3,row:2.5,hours:30,init:0,dueIn:null,
+     desc:"接口设计、错误码、幂等、鉴权。API 是给未来的自己和其他人用的产品。",
+     res:[["RESTful API 设计指南","#"]]},
+    {id:"perf",title:"性能分析",sub:"度量、定位、优化",type:"skill",tier:3,row:3.5,hours:16,init:0,dueIn:null,
+     desc:"先度量再优化。火焰图、基准测试、缓存命中率 —— 没有数据的优化都是猜。",
+     res:[["《性能之巅》","#"]]},
+    {id:"sec",title:"安全基础",sub:"注入、鉴权、加密",type:"concept",tier:3,row:4.5,hours:12,init:0,dueIn:null,
+     desc:"OWASP 前十大类、密码存储、最小权限。安全不是加个功能，是写代码时的默认习惯。",
+     res:[["OWASP Top 10","https://owasp.org/www-project-top-ten/"]]},
+
+    {id:"fullstack",title:"全栈项目",sub:"从零做一个完整应用",type:"project",tier:4,row:0.5,hours:40,init:0,dueIn:null,
+     desc:"把前端、后端、数据库、部署串起来。做完一个，你对「系统」的理解会从概念变成手感。",
+     res:[["Full Stack Open","https://fullstackopen.com/zh/"]]},
+    {id:"sysdesign",title:"系统设计",sub:"拆分、权衡、扩展",type:"concept",tier:4,row:2.2,hours:26,init:0,dueIn:null,
+     desc:"没有标准答案，只有权衡。缓存、队列、分库分表，每一个都要能说出「不这样做会怎样」。",
+     res:[["《系统设计面试》","#"],["System Design Primer","https://github.com/donnemartin/system-design-primer"]]},
+    {id:"dist",title:"分布式系统",sub:"一致性、容错、共识",type:"concept",tier:5,row:3.2,hours:30,init:0,dueIn:null,
+     desc:"网络会分区、节点会挂。CAP、幂等、重试、最终一致性，都是为「不可靠」付的保险费。",
+     res:[["《数据密集型应用系统设计》","#"]]},
+    {id:"cloud",title:"云原生与容器",sub:"Docker、CI/CD",type:"skill",tier:4,row:4.3,hours:18,init:0,dueIn:null,
+     desc:"镜像、编排、流水线。让「在我机器上能跑」这句话彻底消失。",
+     res:[["Docker 官方文档","https://docs.docker.com/"]]},
+    {id:"pr",title:"代码评审",sub:"读别人的代码",type:"practice",tier:4,row:5.2,hours:6,init:0,dueIn:null,
+     desc:"评审是最高效的学习方式之一：你既要看懂意图，也要判断代价。",
+     res:[["Google 代码评审指南","https://google.github.io/eng-practices/review/"]]},
+
+    {id:"oss",title:"开源贡献",sub:"在真实项目里提交代码",type:"milestone",tier:5,row:1.1,hours:20,init:0,dueIn:null,
+     desc:"从修文档、补测试开始，到被 maintainer 合并。这一步之后，你对工程规范的理解会变得具体。",
+     res:[["Good First Issue","https://goodfirstissue.dev/"]]},
+    {id:"arch",title:"软件架构与 DDD",sub:"边界、演进、可维护",type:"concept",tier:5,row:2.4,hours:30,init:0,dueIn:null,
+     desc:"架构是关于「以后改起来有多贵」的决策。领域建模帮你找到正确的切割线。",
+     res:[["《领域驱动设计》","#"]]},
+    {id:"tuning",title:"性能调优实战",sub:"在真实系统上压测",type:"project",tier:6,row:3.5,hours:24,init:0,dueIn:null,
+     desc:"拿到一个慢系统，定位瓶颈、做优化、用数据证明有效。这是最像工程师工作的一件事。",
+     res:[["《高性能 MySQL》","#"]]},
+    {id:"launch",title:"上线一个产品",sub:"从想法到真实用户",type:"milestone",tier:6,row:4.6,hours:50,init:0,dueIn:null,
+     desc:"有域名、有监控、有第一个真实用户。它会暴露你所有没想清楚的地方 —— 这正是它的价值。",
+     res:[["Indie Hacker 案例集","#"]]}
+  ],
+  edges:[
+    ["prog-basic","oop"],["prog-basic","debug"],["prog-basic","ds"],["prog-basic","git"],
+    ["cs-fund","cli"],["cs-fund","net"],["cs-fund","os"],
+    ["math-disc","algo"],
+    ["oop","test"],["oop","fe"],["oop","dp"],
+    ["debug","test"],
+    ["ds","algo"],["ds","db"],
+    ["cli","os"],
+    ["test","fe"],["test","dp"],["test","pr"],
+    ["db","api"],["db","sysdesign"],
+    ["net","api"],["net","sec"],["net","cloud"],
+    ["algo","perf"],["os","perf"],["os","sec"],["os","cloud"],
+    ["fe","fullstack"],["api","fullstack"],["api","sysdesign"],
+    ["dp","arch"],
+    ["perf","sysdesign"],["perf","tuning"],
+    ["sysdesign","dist"],["sysdesign","arch"],
+    ["fullstack","oss"],["fullstack","launch"],
+    ["cloud","launch"],["arch","launch"],
+    ["dist","tuning"],
+    ["git","pr"],["pr","oss"]
+  ]
+},
+{
+  id:"en", title:"英语", goal:"能在工作中用英语开会与写文档",
+  nodes:[
+    {id:"en-vocab",title:"核心词汇 2000",sub:"高频词优先",type:"concept",tier:0,row:0,hours:60,init:4,dueIn:4,
+     desc:"先拿下覆盖 80% 场景的 2000 个高频词。用句子记词，别背单词表。",
+     res:[["Anki 牌组","https://apps.ankiweb.net/"]]},
+    {id:"en-phonics",title:"音标与发音",sub:"能听出差别才听得懂",type:"skill",tier:0,row:1.4,hours:12,init:4,dueIn:null,
+     desc:"最小对立对训练。发音不准，听力会一直卡在一个看不见的天花板。",
+     res:[["BBC Learning English","https://www.bbc.co.uk/learningenglish/"]]},
+    {id:"en-grammar",title:"语法框架",sub:"时态、从句、语序",type:"concept",tier:0,row:3,hours:20,init:3,dueIn:null,
+     desc:"不求背规则，求「说错时能自己察觉」。重点练时态与从句。",
+     res:[["《English Grammar in Use》","#"]]},
+
+    {id:"en-listen",title:"精听训练",sub:"逐句复述",type:"practice",tier:1,row:0.4,hours:30,init:2,dueIn:null,
+     desc:"一段 2 分钟音频听到能复述。慢速材料不算，要用真实语速。",
+     res:[["播客：Tech Won't Save Us","#"]]},
+    {id:"en-speak",title:"口语输出",sub:"自言自语也能练",type:"practice",tier:1,row:1.8,hours:40,init:0,dueIn:null,
+     desc:"每天 5 分钟对着录音讲一件技术小事。先说清楚，再追求地道。",
+     res:[["Cambly / italki","#"]]},
+    {id:"en-read",title:"泛读与精读",sub:"从兴趣材料切入",type:"practice",tier:1,row:3,hours:30,init:3,dueIn:null,
+     desc:"泛读建语感，精读建结构。技术博客是最适合你的材料。",
+     res:[["Hacker News","https://news.ycombinator.com/"]]},
+
+    {id:"en-docs",title:"技术文档阅读",sub:"读官方文档不靠翻译",type:"skill",tier:2,row:1.2,hours:16,init:0,dueIn:null,
+     desc:"英文文档的句式高度重复，读 20 篇就能形成肌肉记忆。这是投入产出比最高的一步。",
+     res:[["MDN 英文版","https://developer.mozilla.org/"]]},
+    {id:"en-write",title:"写作与邮件",sub:"清楚 > 华丽",type:"skill",tier:2,row:2.6,hours:20,init:0,dueIn:null,
+     desc:"三句话讲清背景、诉求、截止时间。技术写作的核心是结构，不是词汇量。",
+     res:[["《Style: Lessons in Clarity》","#"]]},
+
+    {id:"en-meeting",title:"会议与演讲",sub:"听懂快语速、能插上话",type:"skill",tier:3,row:1.4,hours:24,init:0,dueIn:null,
+     desc:"会前读议程、会中记关键词、会末复述一次结论。这是最实用的会议英语。",
+     res:[["会议英语句型库","#"]]},
+    {id:"en-interview",title:"面试表达",sub:"能讲清项目与权衡",type:"milestone",tier:3,row:2.8,hours:20,init:0,dueIn:null,
+     desc:"用 STAR 结构讲项目：背景、你的决策、结果、复盘。练 10 遍就会。",
+     res:[["STAR 法则","#"]]}
+  ],
+  edges:[
+    ["en-phonics","en-listen"],["en-vocab","en-listen"],
+    ["en-phonics","en-speak"],["en-grammar","en-speak"],
+    ["en-vocab","en-read"],["en-grammar","en-read"],
+    ["en-read","en-docs"],["en-grammar","en-docs"],
+    ["en-grammar","en-write"],["en-read","en-write"],
+    ["en-listen","en-meeting"],["en-speak","en-meeting"],
+    ["en-write","en-interview"],["en-meeting","en-interview"]
+  ]
+}
+];
+
+/* ================= 补充蓝图：嵌入式 / Vue / React ================= */
+const EXTRA_BLUEPRINTS = [
+{
+  id:"emb", title:"嵌入式", goal:"能独立交付一块带 RTOS 的量产级板子",
+  nodes:[
+    {id:"emb-c",title:"C 语言与内存",sub:"指针、位运算、内存布局",type:"concept",tier:0,row:0,hours:40,init:4,dueIn:3,
+     desc:"指针、结构体对齐、栈与堆、volatile 与 const。嵌入式的疑难 bug 九成出在这几件事上，而不是出在语法。",
+     res:[["《C 和指针》","#"],["《深入理解 C 指针》","#"]]},
+    {id:"emb-elec",title:"电子电路基础",sub:"电压、电流、器件、测量",type:"concept",tier:0,row:1.9,hours:24,init:3,dueIn:null,
+     desc:"欧姆定律、分压、上拉下拉、三极管与 MOS 开关。会用万用表和示波器，比背公式重要得多。",
+     res:[["《电子技术基础》","#"],["EEVblog 入门","https://www.eevblog.com/"]]},
+    {id:"emb-arch",title:"单片机体系结构",sub:"内核、存储器映射、时钟",type:"concept",tier:0,row:3.8,hours:20,init:3,dueIn:null,
+     desc:"寄存器、中断向量表、Flash 与 SRAM 的边界、时钟树。能读懂 reference manual，是后面一切的前提。",
+     res:[["STM32 参考手册","#"]]},
+
+    {id:"emb-gpio",title:"GPIO 与中断",sub:"点亮、按键、外部中断",type:"practice",tier:1,row:0,hours:16,init:4,dueIn:6,
+     desc:"输入输出、上拉、按键去抖、中断触发方式。这是第一个「能跑起来」的里程碑，也是建立信心的节点。",
+     res:[["STM32 HAL 例程","#"]]},
+    {id:"emb-tool",title:"工具链与调试",sub:"GCC、CMake、SWD、逻辑分析仪",type:"practice",tier:1,row:1.6,hours:18,init:3,dueIn:null,
+     desc:"源码怎么变成 Flash 里的字节、SWD 单步、串口 printf、逻辑分析仪看时序。会用工具的人才算入门。",
+     res:[["OpenOCD 文档","https://openocd.org/"]]},
+    {id:"emb-sch",title:"读原理图与硬件联调",sub:"网络标号、测试点、飞线",type:"practice",tier:1,row:3.2,hours:14,init:1,dueIn:null,
+     desc:"对着原理图找测试点，用示波器确认信号。软件出身的人最缺这项硬功夫，补上之后排障速度翻倍。",
+     res:[["《硬件十万个为什么》","#"]]},
+
+    {id:"emb-periph",title:"外设驱动",sub:"UART / SPI / I2C / ADC",type:"skill",tier:2,row:0,hours:30,init:2,dueIn:null,
+     desc:"四种总线各自的时序与坑，DMA 怎么配合搬运。验收标准是用示波器验证过，而不是「应该没问题」。",
+     res:[["《嵌入式硬件设计》","#"]]},
+    {id:"emb-mem",title:"启动流程与内存",sub:"链接脚本、栈、堆",type:"concept",tier:2,row:1.5,hours:20,init:1,dueIn:null,
+     desc:"从复位向量到 main 之间发生了什么；栈溢出为什么表现为「随机死机」。看懂 map 文件是硬技能。",
+     res:[["链接脚本指南","#"]]},
+    {id:"emb-conc",title:"并发与中断安全",sub:"临界区、原子操作、竞态",type:"concept",tier:2,row:2.8,hours:18,init:0,dueIn:null,
+     desc:"中断与主循环共享变量时，什么时候必须关中断。volatile 只挡得住编译器优化，挡不住竞态。",
+     res:[["《嵌入式 C 编程实战》","#"]]},
+    {id:"emb-time",title:"定时器与 PWM",sub:"时基、输入捕获、占空比",type:"skill",tier:2,row:4.0,hours:12,init:0,dueIn:null,
+     desc:"定时器是嵌入式里最被低估的外设：计时、测频、调速、生成波形全靠它。",
+     res:[["STM32 定时器笔记","#"]]},
+
+    {id:"emb-rtos",title:"FreeRTOS 任务与同步",sub:"任务、队列、信号量、优先级",type:"skill",tier:3,row:0,hours:30,init:0,dueIn:null,
+     desc:"任务优先级怎么定、队列与信号量怎么选、堆栈给多少。RTOS 不是银弹，用错比裸机更难查。",
+     res:[["FreeRTOS 官方手册","https://www.freertos.org/"]]},
+    {id:"emb-boot",title:"Bootloader 与 OTA",sub:"分区、跳转、固件升级",type:"skill",tier:3,row:1.4,hours:20,init:0,dueIn:null,
+     desc:"双分区、回滚、校验、断点续传。产品能不能远程升级，决定你半夜要不要跑现场。",
+     res:[["MCUboot","https://mcuboot.com/"]]},
+    {id:"emb-proto",title:"通信协议",sub:"CAN、Modbus、USB、以太网",type:"skill",tier:3,row:2.8,hours:24,init:0,dueIn:null,
+     desc:"帧结构、仲裁、错误处理、超时重传。协议是设备之间唯一不会撒谎的东西。",
+     res:[["CAN 总线教程","#"]]},
+    {id:"emb-power",title:"低功耗设计",sub:"睡眠模式、功耗预算",type:"skill",tier:3,row:4.0,hours:16,init:0,dueIn:null,
+     desc:"电流预算、外设关断、RTC 唤醒、电池寿命估算。一块纽扣电池撑一年，靠的全是细节。",
+     res:[["低功耗设计指南","#"]]},
+
+    {id:"emb-linux",title:"嵌入式 Linux 基础",sub:"交叉编译、文件系统、启动链",type:"concept",tier:4,row:0.6,hours:30,init:0,dueIn:null,
+     desc:"交叉编译链、根文件系统、uboot 启动链。从裸机到 Linux 是另一套心智模型。",
+     res:[["《嵌入式 Linux 开发》","#"]]},
+    {id:"emb-rtperf",title:"实时性与性能分析",sub:"抖动、中断延迟、trace",type:"skill",tier:4,row:2.2,hours:18,init:0,dueIn:null,
+     desc:"最坏执行时间、中断延迟、优先级反转。实时系统的正确性看「最坏情况」，不看平均值。",
+     res:[["SystemView","#"]]},
+    {id:"emb-iot",title:"无线与 IoT 协议",sub:"BLE、WiFi、MQTT",type:"skill",tier:4,row:4.0,hours:24,init:0,dueIn:null,
+     desc:"配网、重连、断线缓存、低功耗与连接的取舍。联网设备的复杂度一半在「网络不可靠」上。",
+     res:[["MQTT 规范","https://mqtt.org/"]]},
+
+    {id:"emb-driver",title:"Linux 驱动与设备树",sub:"字符设备、中断、DTS",type:"skill",tier:5,row:0.4,hours:30,init:0,dueIn:null,
+     desc:"设备树描述硬件，驱动负责实现。会写一个字符设备驱动，就跨过了这道分水岭。",
+     res:[["《Linux 设备驱动开发》","#"]]},
+    {id:"emb-mfg",title:"量产与可靠性",sub:"EMC、产测、烧录治具",type:"practice",tier:5,row:2.0,hours:20,init:0,dueIn:null,
+     desc:"EMC 整改、批量烧录、产线测试点、失效分析。设计能跑通只是第一步，能量产才算数。",
+     res:[["硬件量产笔记","#"]]},
+    {id:"emb-product",title:"项目：联网设备原型",sub:"从原理图到能联网的样机",type:"project",tier:5,row:3.6,hours:60,init:0,dueIn:null,
+     desc:"自己画板、打样、贴片、写固件、配网、上云。做完这一台，你会清楚自己缺的是哪一块。",
+     res:[["立创开源硬件平台","https://oshwhub.com/"]]},
+
+    {id:"emb-ship",title:"交付一块量产板",sub:"有良率、有产测、有 OTA",type:"milestone",tier:6,row:2.6,hours:80,init:0,dueIn:null,
+     desc:"不是「能点亮」，而是「能交付」：有 BOM、有产测脚本、有升级方案、有一份别人看得懂的文档。",
+     res:[["硬件产品化清单","#"]]}
+  ],
+  edges:[
+    ["emb-c","emb-gpio"],["emb-c","emb-tool"],["emb-c","emb-mem"],
+    ["emb-elec","emb-sch"],
+    ["emb-arch","emb-gpio"],["emb-arch","emb-mem"],
+    ["emb-gpio","emb-periph"],["emb-gpio","emb-conc"],["emb-gpio","emb-time"],
+    ["emb-tool","emb-periph"],["emb-tool","emb-linux"],
+    ["emb-periph","emb-rtos"],["emb-periph","emb-boot"],["emb-periph","emb-proto"],["emb-periph","emb-power"],
+    ["emb-mem","emb-rtos"],["emb-mem","emb-boot"],["emb-mem","emb-linux"],
+    ["emb-conc","emb-rtos"],["emb-conc","emb-power"],["emb-conc","emb-rtperf"],
+    ["emb-rtos","emb-rtperf"],["emb-rtos","emb-iot"],["emb-rtos","emb-product"],
+    ["emb-boot","emb-mfg"],["emb-boot","emb-product"],
+    ["emb-proto","emb-iot"],
+    ["emb-power","emb-mfg"],
+    ["emb-linux","emb-driver"],
+    ["emb-iot","emb-product"],
+    ["emb-product","emb-ship"],["emb-mfg","emb-ship"]
+  ]
+},
+{
+  id:"vue", title:"前端 Vue", goal:"能独立开发并维护一个 Vue 3 产品",
+  nodes:[
+    {id:"vue-js",title:"JavaScript 核心",sub:"作用域、闭包、原型、异步",type:"concept",tier:0,row:0,hours:40,init:4,dueIn:7,
+     desc:"闭包、原型链、this、事件循环。框架的坑，八成是 JS 本身没打牢。",
+     res:[["MDN JavaScript","https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/"],["《你不知道的 JavaScript》","#"]]},
+    {id:"vue-css",title:"CSS 与布局",sub:"Flex、Grid、响应式",type:"concept",tier:0,row:1.9,hours:24,init:3,dueIn:null,
+     desc:"盒模型、Flex 与 Grid 的取舍、层叠上下文。布局能力直接决定你做出来的页面是否「像产品」。",
+     res:[["CSS 布局完全指南","https://css-tricks.com/snippets/css/a-guide-to-flexbox/"]]},
+    {id:"vue-html",title:"HTML 与浏览器",sub:"DOM、事件、渲染流程",type:"concept",tier:0,row:3.8,hours:12,init:4,dueIn:null,
+     desc:"DOM 树、事件流、重排与重绘。知道浏览器怎么工作，调试才不会全靠猜。",
+     res:[["MDN Web 入门","https://developer.mozilla.org/zh-CN/docs/Learn"]]},
+
+    {id:"vue-core",title:"Vue 3 核心",sub:"响应式、模板、组件",type:"skill",tier:1,row:0,hours:30,init:3,dueIn:2,
+     desc:"ref/reactive 的差别、模板编译、组件生命周期。先建立「数据驱动视图」的直觉，再谈技巧。",
+     res:[["Vue 3 官方文档","https://cn.vuejs.org/"],["Vue 3 源码解析","#"]]},
+    {id:"vue-build",title:"工程化",sub:"Vite、包管理、ESLint",type:"practice",tier:1,row:1.6,hours:14,init:3,dueIn:5,
+     desc:"Vite 的冷启动为什么快、依赖预构建、环境变量、别名。工程化做不好，后面每一步都别扭。",
+     res:[["Vite 官方文档","https://cn.vitejs.dev/"]]},
+    {id:"vue-style",title:"样式工程",sub:"预处理器、Tailwind、设计变量",type:"practice",tier:1,row:3.2,hours:12,init:2,dueIn:null,
+     desc:"SFC 里的 scoped 样式、CSS 变量做主题、Tailwind 的取舍。样式也要有工程约束。",
+     res:[["Tailwind CSS","https://tailwindcss.com/"]]},
+
+    {id:"vue-comp",title:"组件通信与插槽",sub:"props、emit、slot、provide",type:"skill",tier:2,row:0,hours:20,init:2,dueIn:null,
+     desc:"props 向下、emit 向上、插槽做结构复用。组件边界划得好，代码就不会长成一团。",
+     res:[["组件基础","https://cn.vuejs.org/guide/essentials/component-basics.html"]]},
+    {id:"vue-pinia",title:"状态管理 Pinia",sub:"store、getter、持久化",type:"skill",tier:2,row:1.5,hours:16,init:0,dueIn:null,
+     desc:"什么时候该进 store、什么时候留在组件里。滥用全局状态，比不用状态管理更糟。",
+     res:[["Pinia 文档","https://pinia.vuejs.org/zh/"]]},
+    {id:"vue-router",title:"路由与权限",sub:"Vue Router、守卫、动态路由",type:"skill",tier:2,row:2.8,hours:18,init:0,dueIn:null,
+     desc:"路由守卫、按需加载、权限菜单。中后台的骨架一半是路由撑起来的。",
+     res:[["Vue Router","https://router.vuejs.org/zh/"]]},
+    {id:"vue-ts",title:"TypeScript in Vue",sub:"类型、泛型组件、类型推导",type:"concept",tier:2,row:4.2,hours:20,init:0,dueIn:null,
+     desc:"defineProps 泛型、ref 类型推导、接口建模。TS 的价值在重构时才会显现。",
+     res:[["Vue + TS","https://cn.vuejs.org/guide/typescript/overview.html"]]},
+
+    {id:"vue-ui",title:"组件库与主题",sub:"Element Plus / Naive UI",type:"skill",tier:3,row:0,hours:18,init:0,dueIn:null,
+     desc:"用现成组件库搭界面，并按设计稿改主题变量。不要重造按钮和表格。",
+     res:[["Element Plus","https://element-plus.org/zh-CN/"]]},
+    {id:"vue-form",title:"表单与数据表格",sub:"校验、联动、分页查询",type:"skill",tier:3,row:1.4,hours:22,init:0,dueIn:null,
+     desc:"动态表单、校验规则、表格分页与筛选。这类页面占中后台工作量的一半。",
+     res:[["表单实践","#"]]},
+    {id:"vue-async",title:"数据请求与错误处理",sub:"axios、loading、竞态",type:"skill",tier:3,row:2.8,hours:16,init:0,dueIn:null,
+     desc:"请求取消、并发控制、统一错误提示、加载态。竞态条件是前端最隐蔽的 bug 之一。",
+     res:[["axios 文档","https://axios-http.com/zh/"]]},
+    {id:"vue-compose",title:"组合式 API 进阶",sub:"composable 设计与复用",type:"concept",tier:3,row:4.2,hours:16,init:0,dueIn:null,
+     desc:"把「带状态的逻辑」抽成 composable，而不是抽成组件。这是 Vue 3 真正拉开差距的地方。",
+     res:[["组合式函数","https://cn.vuejs.org/guide/reusability/composables.html"]]},
+
+    {id:"vue-test",title:"测试",sub:"Vitest + Playwright",type:"practice",tier:4,row:0.6,hours:18,init:0,dueIn:null,
+     desc:"组件单测测行为不测实现，E2E 只覆盖关键路径。测试是为了敢改，不是为了覆盖率。",
+     res:[["Vitest","https://cn.vitest.dev/"],["Playwright","https://playwright.dev/"]]},
+    {id:"vue-perf",title:"性能优化",sub:"分包、虚拟列表、懒加载",type:"skill",tier:4,row:2.0,hours:20,init:0,dueIn:null,
+     desc:"先看打包体积和长任务，再谈优化。首屏快 1 秒，比任何微优化都值。",
+     res:[["性能优化清单","#"]]},
+    {id:"vue-deploy",title:"构建与部署",sub:"CI/CD、环境变量、回滚",type:"practice",tier:4,row:3.4,hours:12,init:0,dueIn:null,
+     desc:"静态站怎么发、环境变量怎么注入、出问题怎么回滚。能部署，才算能交付。",
+     res:[["Vite 部署","https://cn.vitejs.dev/guide/static-deploy.html"]]},
+
+    {id:"vue-admin",title:"项目：中后台系统",sub:"从零到可用的管理端",type:"project",tier:5,row:1.0,hours:50,init:0,dueIn:null,
+     desc:"登录、权限、列表、表单、图表、部署，一个都不能少。做完一遍，Vue 才算真的会了。",
+     res:[["Vue 中后台模板","#"]]},
+    {id:"vue-lib",title:"组件库与设计系统",sub:"把重复界面沉淀下来",type:"project",tier:5,row:2.6,hours:40,init:0,dueIn:null,
+     desc:"把业务里重复三次以上的界面抽成组件，配上文档和示例。这是从「写页面」到「搭系统」的分水岭。",
+     res:[["组件库建设","#"]]},
+
+    {id:"vue-ship",title:"独立维护一个 Vue 产品",sub:"能迭代、能排障、能交接",type:"milestone",tier:6,row:1.8,hours:60,init:0,dueIn:null,
+     desc:"线上有人用、出了故障你能定位、新人接手看得懂。这三条比「做过多少个项目」更能说明水平。",
+     res:[["#"]]}
+  ],
+  edges:[
+    ["vue-js","vue-core"],["vue-js","vue-build"],["vue-html","vue-core"],
+    ["vue-css","vue-style"],
+    ["vue-core","vue-comp"],["vue-core","vue-pinia"],["vue-core","vue-router"],["vue-core","vue-ts"],
+    ["vue-build","vue-router"],
+    ["vue-comp","vue-ui"],["vue-style","vue-ui"],
+    ["vue-comp","vue-form"],["vue-pinia","vue-form"],
+    ["vue-pinia","vue-async"],["vue-comp","vue-async"],
+    ["vue-comp","vue-compose"],["vue-ts","vue-compose"],
+    ["vue-comp","vue-test"],["vue-build","vue-test"],
+    ["vue-async","vue-perf"],["vue-ui","vue-perf"],
+    ["vue-build","vue-deploy"],
+    ["vue-ui","vue-admin"],["vue-form","vue-admin"],["vue-router","vue-admin"],["vue-deploy","vue-admin"],
+    ["vue-ui","vue-lib"],["vue-compose","vue-lib"],["vue-ts","vue-lib"],
+    ["vue-admin","vue-ship"],["vue-perf","vue-ship"],["vue-test","vue-ship"]
+  ]
+},
+{
+  id:"react", title:"前端 React", goal:"能独立开发并维护一个 React 产品",
+  nodes:[
+    {id:"re-js",title:"JavaScript 核心",sub:"作用域、闭包、原型、异步",type:"concept",tier:0,row:0,hours:40,init:4,dueIn:7,
+     desc:"闭包、原型链、this、微任务。React 的许多「奇怪行为」其实都是 JS 语义。",
+     res:[["MDN JavaScript","https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/"],["《你不知道的 JavaScript》","#"]]},
+    {id:"re-css",title:"CSS 与布局",sub:"Flex、Grid、层叠",type:"concept",tier:0,row:1.9,hours:24,init:3,dueIn:null,
+     desc:"布局是前端的门面。Flex 与 Grid 分工、层叠上下文、响应式断点。",
+     res:[["CSS 布局完全指南","https://css-tricks.com/snippets/css/a-guide-to-flexbox/"]]},
+    {id:"re-ts",title:"TypeScript 基础",sub:"类型、泛型、类型收窄",type:"concept",tier:0,row:3.8,hours:28,init:3,dueIn:null,
+     desc:"接口、泛型、联合类型与收窄。React 的 props 有了类型，重构才敢下手。",
+     res:[["TypeScript 手册","https://www.typescriptlang.org/docs/"]]},
+
+    {id:"re-core",title:"React 核心",sub:"JSX、组件、state、props",type:"skill",tier:1,row:0,hours:30,init:3,dueIn:2,
+     desc:"组件的本质是「props → UI」的纯函数。先把状态提升、单向数据流想清楚，再学 Hooks。",
+     res:[["React 官方文档","https://zh-hans.react.dev/"]]},
+    {id:"re-build",title:"工程化",sub:"Vite、包管理、ESLint",type:"practice",tier:1,row:1.6,hours:14,init:3,dueIn:null,
+     desc:"构建工具、路径别名、环境变量、代码规范。个人项目也值得一次性配好。",
+     res:[["Vite 官方文档","https://cn.vitejs.dev/"]]},
+    {id:"re-style",title:"样式方案",sub:"CSS Modules、Tailwind、CSS-in-JS",type:"practice",tier:1,row:3.2,hours:12,init:2,dueIn:null,
+     desc:"先选一种用到熟，再比较。样式方案的战争没有赢家，只有一致性。",
+     res:[["Tailwind CSS","https://tailwindcss.com/"]]},
+
+    {id:"re-hooks",title:"Hooks 深入",sub:"useEffect、依赖、闭包陷阱",type:"concept",tier:2,row:0,hours:26,init:2,dueIn:null,
+     desc:"依赖数组、清理函数、过期闭包。90% 的 React bug 都能追溯到 useEffect 用错了。",
+     res:[["Hooks 参考","https://zh-hans.react.dev/reference/react"]]},
+    {id:"re-state",title:"状态管理",sub:"Zustand / Redux Toolkit",type:"skill",tier:2,row:1.5,hours:18,init:0,dueIn:null,
+     desc:"局部状态、服务端状态、全局状态要分开。把请求结果塞进 store 是最常见的错误。",
+     res:[["Zustand","https://zustand.docs.pmnd.rs/"],["Redux Toolkit","https://redux-toolkit.js.org/"]]},
+    {id:"re-router",title:"路由",sub:"React Router、嵌套路由、懒加载",type:"skill",tier:2,row:2.8,hours:16,init:0,dueIn:null,
+     desc:"嵌套路由、布局路由、错误边界、按需加载。路由结构就是应用的信息架构。",
+     res:[["React Router","https://reactrouter.com/"]]},
+    {id:"re-form",title:"表单与校验",sub:"React Hook Form + zod",type:"skill",tier:2,row:4.2,hours:20,init:0,dueIn:null,
+     desc:"非受控表单为什么更快、schema 校验怎么复用。表单写得好，业务代码会短一半。",
+     res:[["React Hook Form","https://react-hook-form.com/"],["zod","https://zod.dev/"]]},
+
+    {id:"re-data",title:"数据请求",sub:"TanStack Query、缓存、乐观更新",type:"skill",tier:3,row:0,hours:22,init:0,dueIn:null,
+     desc:"缓存、失效、重试、乐观更新。服务端状态有它自己的规则，别用 useState 硬扛。",
+     res:[["TanStack Query","https://tanstack.com/query/latest"]]},
+    {id:"re-ui",title:"组件库",sub:"Ant Design / Mantine",type:"skill",tier:3,row:1.5,hours:18,init:0,dueIn:null,
+     desc:"用现成组件库 + 主题 token 搭界面。自造按钮和弹窗是纯浪费。",
+     res:[["Ant Design","https://ant.design/"]]},
+    {id:"re-perf",title:"渲染性能",sub:"memo、虚拟列表、代码分割",type:"skill",tier:3,row:2.8,hours:20,init:0,dueIn:null,
+     desc:"先测量再优化。重渲染、长列表、包体积是三个独立问题，各有各的解法。",
+     res:[["性能优化","https://zh-hans.react.dev/learn/render-and-commit"]]},
+
+    {id:"re-test",title:"测试",sub:"Testing Library + Playwright",type:"practice",tier:4,row:0.4,hours:18,init:0,dueIn:null,
+     desc:"按用户视角测行为，不测实现细节。测试写对了，重构才有安全感。",
+     res:[["Testing Library","https://testing-library.com/"]]},
+    {id:"re-ssr",title:"SSR 与 Next.js",sub:"服务端渲染、数据获取、路由约定",type:"concept",tier:4,row:2.0,hours:24,init:0,dueIn:null,
+     desc:"什么场景真的需要 SSR/SSG，什么场景是过度设计。先把 CSR 的边界想清楚。",
+     res:[["Next.js","https://nextjs.org/"]]},
+    {id:"re-deploy",title:"构建与部署",sub:"CI/CD、环境变量、监控",type:"practice",tier:4,row:3.4,hours:12,init:0,dueIn:null,
+     desc:"静态托管、环境隔离、回滚、错误上报。上线不是终点，可观测才是。",
+     res:[["部署指南","#"]]},
+
+    {id:"re-admin",title:"项目：中后台系统",sub:"权限、表格、表单、图表",type:"project",tier:5,row:0.8,hours:50,init:0,dueIn:null,
+     desc:"一个能跑起来的业务系统，会把路由、状态、请求、表单全部串起来。",
+     res:[["中后台实践","#"]]},
+    {id:"re-design",title:"组件设计系统",sub:"可复用组件与文档",type:"project",tier:5,row:2.4,hours:40,init:0,dueIn:null,
+     desc:"把重复界面沉淀成带文档的组件库。这一步决定你是「写页面的」还是「搭平台的」。",
+     res:[["设计系统","#"]]},
+
+    {id:"re-ship",title:"独立维护一个 React 产品",sub:"能迭代、能排障、能交接",type:"milestone",tier:6,row:1.6,hours:60,init:0,dueIn:null,
+     desc:"线上有人用、出故障你能定位、新人接手看得懂。这三条比「做过多少项目」更能说明水平。",
+     res:[["#"]]}
+  ],
+  edges:[
+    ["re-js","re-core"],["re-js","re-build"],["re-css","re-style"],
+    ["re-core","re-hooks"],["re-core","re-state"],["re-core","re-router"],["re-core","re-form"],["re-ts","re-form"],
+    ["re-build","re-router"],
+    ["re-core","re-ui"],["re-form","re-ui"],
+    ["re-state","re-data"],
+    ["re-hooks","re-perf"],
+    ["re-core","re-test"],["re-build","re-test"],
+    ["re-data","re-ssr"],["re-perf","re-ssr"],
+    ["re-build","re-deploy"],
+    ["re-ui","re-admin"],["re-data","re-admin"],["re-router","re-admin"],["re-deploy","re-admin"],
+    ["re-ui","re-design"],["re-ts","re-design"],
+    ["re-admin","re-ship"],["re-perf","re-ship"],["re-test","re-ship"]
+  ]
+}
+];
+
+// 去掉演示用的英语蓝图；软件工程保留为「通用地基」排在最后
+(function(){
+  const kept = BLUEPRINTS.filter(function(b){ return b.id !== "en"; });
+  BLUEPRINTS.length = 0;
+  BLUEPRINTS.push.apply(BLUEPRINTS, EXTRA_BLUEPRINTS.concat(kept));
+})();
+
+/* ================= utils ================= */
+const $ = s => document.querySelector(s);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const days = n => n*DAY;
+
+const _measure = document.createElement("canvas").getContext("2d");
+function wrapPx(text, maxWidth, font, maxLines){
+  _measure.font = font;
+  const out = [];
+  let cur = "";
+  for (const ch of text){
+    if (cur && _measure.measureText(cur + ch).width > maxWidth){
+      out.push(cur);
+      cur = ch;
+      if (out.length >= maxLines) break;
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur && out.length < maxLines) out.push(cur);
+  if (out.length === maxLines){
+    const consumed = out.join("").length;
+    if (consumed < text.length){
+      let last = out[maxLines - 1];
+      while (last.length > 1 && _measure.measureText(last + "…").width > maxWidth) last = last.slice(0, -1);
+      out[maxLines - 1] = last + "…";
+    }
+  }
+  return out.length ? out : [""];
+}
+
+/* ================= store ================= */
+let DB;
+function freshDB(){
+  const bp = {};
+  for (const d of BLUEPRINTS){
+    const nodes = {};
+    for (const n of d.nodes){
+      nodes[n.id] = {
+        m: n.init || 0, note: "", lapses: 0,
+        dueAt: n.dueIn == null ? null : Date.now() + days(n.dueIn),
+        iv: n.dueIn || 0,
+        ev: {self:false, quiz:false, artifact:false, ai:false},
+        res: (n.res || []).map(r => ({l:r[0], u:r[1]}))
+      };
+    }
+    bp[d.id] = {nodes, pos:{}, custom:[], hidden:[]};
+  }
+  return {v:1, active:BLUEPRINTS[0].id, bp};
+}
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return freshDB();
+    const d = JSON.parse(raw);
+    if (!d || d.v !== 1) return freshDB();
+    const base = freshDB();
+    for (const k of Object.keys(base.bp)){
+      if (!d.bp[k]) d.bp[k] = base.bp[k];
+      else {
+        d.bp[k].pos = d.bp[k].pos || {};
+        d.bp[k].custom = d.bp[k].custom || [];
+        d.bp[k].hidden = d.bp[k].hidden || [];
+        for (const id of Object.keys(base.bp[k].nodes)){
+          if (!d.bp[k].nodes[id]) d.bp[k].nodes[id] = base.bp[k].nodes[id];
+        }
+      }
+    }
+    if (!BP_DEF(d.active)) d.active = BLUEPRINTS[0].id;
+    return d;
+  }catch(e){ return freshDB(); }
+}
+let saveTimer = null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }catch(e){}
+  }, 260);
+}
+
+/* ================= selectors ================= */
+function BP_DEF(id){ return BLUEPRINTS.find(b => b.id === id); }
+function st(id){ return DB.bp[id]; }
+function bpId(){ return DB.active; }
+function nodesOf(id){
+  const s = st(id), hidden = s.hidden || [];
+  return BP_DEF(id).nodes.concat(s.custom || []).filter(n => !hidden.includes(n.id));
+}
+function nodeById(id, nid){ return nodesOf(id).find(n => n.id === nid); }
+function edgesOf(id){
+  const ids = new Set(nodesOf(id).map(n => n.id));
+  return BP_DEF(id).edges
+    .filter(([a, b]) => ids.has(a) && ids.has(b))
+    .map(([a, b], i) => ({id:"e"+i, from:a, to:b}));
+}
+function ns(nid){ return st(bpId()).nodes[nid]; }
+function masteryOf(id, nid){ const s = st(id).nodes[nid]; return s ? s.m : 0; }
+function prereqsOf(id, nid){ return edgesOf(id).filter(e => e.to === nid).map(e => e.from); }
+function dependentsOf(id, nid){ return edgesOf(id).filter(e => e.from === nid).map(e => e.to); }
+function isDue(s){ return !!(s.dueAt && s.dueAt <= Date.now()); }
+function statusOf(id, nid){
+  const s = st(id).nodes[nid];
+  if (!s) return "locked";
+  if (s.m >= 4) return isDue(s) ? "review" : "mastered";
+  if (s.m > 0) return "learning";
+  return prereqsOf(id, nid).every(p => masteryOf(id, p) >= 3) ? "available" : "locked";
+}
+function statusLabel(s){
+  return {locked:"锁定", available:"可学", learning:"学习中", mastered:"已掌握", review:"待复习"}[s];
+}
+function downstreamCount(id, nid){
+  const adj = {}; edgesOf(id).forEach(e => (adj[e.from] = adj[e.from] || []).push(e.to));
+  const seen = new Set(), stack = [nid];
+  while (stack.length){
+    const cur = stack.pop();
+    for (const nx of adj[cur] || []){
+      if (!seen.has(nx)){ seen.add(nx); stack.push(nx); }
+    }
+  }
+  return seen.size;
+}
+function detectCycle(nodeIds, edges){
+  const adj = {}; edges.forEach(e => (adj[e.from] = adj[e.from] || []).push(e.to));
+  const color = {};
+  const dfs = id => {
+    color[id] = 1;
+    for (const nx of adj[id] || []){
+      if (color[nx] === 1) return true;
+      if (!color[nx] && dfs(nx)) return true;
+    }
+    color[id] = 2; return false;
+  };
+  return nodeIds.some(id => !color[id] && dfs(id));
+}
+function hasCycle(id){ return detectCycle(nodesOf(id).map(n => n.id), edgesOf(id)); }
+
+/* ================= metrics ================= */
+function computeXP(id){
+  let xp = 0, mastered = 0, milestones = 0;
+  for (const n of nodesOf(id)){
+    const m = masteryOf(id, n.id);
+    xp += Math.round(m) * 18;
+    if (m >= 4){ mastered++; if (n.type === "milestone") milestones++; }
+  }
+  return xp + mastered * 22 + milestones * 50;
+}
+function levelInfo(xp){
+  const L = Math.floor(Math.sqrt(xp / 50)) + 1;
+  const prev = Math.pow(L - 1, 2) * 50, next = Math.pow(L, 2) * 50;
+  return {level:L, prev, next, pct:clamp((xp - prev) / (next - prev), 0, 1)};
+}
+function sizeOf(n){
+  return n.type === "milestone" ? {w:218, h:84} : {w:NODE_W, h:NODE_H};
+}
+
+/* ================= layout ================= */
+let dragPos = null;
+function posOf(id, n){
+  if (dragPos && dragPos[n.id]) return dragPos[n.id];
+  const o = st(id).pos && st(id).pos[n.id];
+  if (o) return {x:o[0], y:o[1]};
+  return {x:PAD_X + n.tier * COL_GAP, y:PAD_Y + n.row * ROW_GAP};
+}
+function boundsOf(id){
+  let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+  for (const n of nodesOf(id)){
+    const p = posOf(id, n), s = sizeOf(n);
+    minX = Math.min(minX, p.x - s.w/2); maxX = Math.max(maxX, p.x + s.w/2);
+    minY = Math.min(minY, p.y - s.h/2); maxY = Math.max(maxY, p.y + s.h/2);
+  }
+  return {minX, minY, maxX, maxY, w:maxX-minX, h:maxY-minY};
+}
+
+/* ================= view ================= */
+let view = {x:0, y:0, k:1};
+let tweenId = 0;
+const stage = $("#stage"), svg = $("#canvas"), vp = $("#viewport");
+
+function applyView(){
+  vp.setAttribute("transform", "translate(" + view.x.toFixed(2) + "," + view.y.toFixed(2) + ") scale(" + view.k.toFixed(4) + ")");
+  $("#zoomLabel").textContent = Math.round(view.k * 100) + "%";
+}
+function tweenView(target, ms){
+  cancelAnimationFrame(tweenId);
+  const from = {x:view.x, y:view.y, k:view.k}, t0 = performance.now();
+  const step = now => {
+    const t = clamp((now - t0) / ms, 0, 1), e = 1 - Math.pow(1 - t, 3);
+    view.x = from.x + (target.x - from.x) * e;
+    view.y = from.y + (target.y - from.y) * e;
+    view.k = from.k + (target.k - from.k) * e;
+    applyView();
+    if (t < 1) tweenId = requestAnimationFrame(step);
+  };
+  tweenId = requestAnimationFrame(step);
+}
+function fitView(animate){
+  const b = boundsOf(bpId());
+  const cw = stage.clientWidth, ch = stage.clientHeight, pad = 60;
+  const k = clamp(Math.min((cw - pad*2) / b.w, (ch - pad*2) / b.h), 0.6, 1.25);
+  const target = {k, x:cw/2 - (b.minX + b.maxX)/2 * k, y:ch/2 - (b.minY + b.maxY)/2 * k};
+  if (animate === false) { view = target; applyView(); } else tweenView(target, 480);
+}
+function centerOn(nid){
+  const n = nodeById(bpId(), nid); if (!n) return;
+  const p = posOf(bpId(), n);
+  const k = Math.max(view.k, 0.85);
+  tweenView({k, x:stage.clientWidth/2 - p.x*k, y:stage.clientHeight/2 - p.y*k}, 420);
+}
+
+/* ================= render: topbar ================= */
+function renderTopbar(){
+  $("#tabs").innerHTML = BLUEPRINTS.map(b => {
+    const ns2 = nodesOf(b.id), done = ns2.filter(n => masteryOf(b.id, n.id) >= 4).length;
+    return '<button class="tab' + (b.id === bpId() ? " on" : "") + '" data-action="tab" data-id="' + b.id + '">'
+      + '<span class="dot"></span>' + esc(b.title)
+      + '<span style="color:#5f7191;font-size:10.5px">' + done + "/" + ns2.length + '</span></button>';
+  }).join("");
+  const xp = computeXP(bpId()), L = levelInfo(xp);
+  $("#levelChip").innerHTML =
+    '<span class="lv">Lv.' + L.level + '</span>'
+    + '<span class="bar"><i style="width:' + (L.pct*100).toFixed(1) + '%"></i></span>'
+    + '<span class="xp">' + xp + " / " + L.next + ' XP</span>';
+}
+
+/* ================= render: rail ================= */
+function reasonFor(id, n){
+  const lag = downstreamCount(id, n.id);
+  if (n.type === "milestone") return "里程碑 · 直接验收你的综合能力";
+  if (lag >= 3) return "后续 " + lag + " 个节点受益，主干路径";
+  if (lag >= 1){
+    const next = dependentsOf(id, n.id)[0];
+    const t = next ? (nodeById(id, next) || {}).title : "";
+    return t ? "通往「" + t + "」" : "解锁 " + lag + " 个后续节点";
+  }
+  return "补齐基础，暂无强依赖";
+}
+function recommend(id, count){
+  const cands = nodesOf(id).filter(n => statusOf(id, n.id) === "available");
+  return cands.map(n => ({n, score: downstreamCount(id, n.id) * 2.4 - (n.hours || 0) * 0.06 + (n.type === "milestone" ? 3 : 0)}))
+    .sort((a, b) => b.score - a.score).slice(0, count || 3).map(x => x.n);
+}
+function renderRail(){
+  const id = bpId(), bp = BP_DEF(id), all = nodesOf(id);
+  const mastered = all.filter(n => masteryOf(id, n.id) >= 4);
+  const learning = all.filter(n => statusOf(id, n.id) === "learning");
+  const pct = all.length ? mastered.length / all.length : 0;
+  const R = 34, C = 2 * Math.PI * R;
+  const recs = recommend(id, 3);
+  const due = all.filter(n => statusOf(id, n.id) === "review");
+  const xp = computeXP(id);
+
+  let html = '<div class="card hero">'
+    + '<svg class="ring" width="92" height="92" viewBox="0 0 92 92">'
+    + '<defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#fbbf24"/></linearGradient></defs>'
+    + '<circle class="ring-bg" cx="46" cy="46" r="' + R + '"/>'
+    + '<circle class="ring-fg" cx="46" cy="46" r="' + R + '" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + (C*(1-pct)).toFixed(1) + '" transform="rotate(-90 46 46)"/>'
+    + '<text x="46" y="46">' + Math.round(pct*100) + '%</text></svg>'
+    + '<div class="hero-meta"><div class="hero-title">' + esc(bp.title) + '</div>'
+    + '<div class="hero-goal">目标 · ' + esc(bp.goal) + '</div>'
+    + '<div class="hero-sub">已掌握 ' + mastered.length + " / " + all.length + ' · 学习中 ' + learning.length + '</div></div></div>';
+
+  html += '<div class="card"><div class="card-head">今日推荐<span class="tag">可解释排序</span></div>';
+  if (!recs.length) html += '<div class="empty">暂时没有可学节点，先去点亮一个前置吧。</div>';
+  else {
+    html += '<ol class="rec-list">' + recs.map((n, i) =>
+      '<li class="rec" data-action="select" data-id="' + n.id + '" role="button" tabindex="0">'
+      + '<span class="rec-rank">' + (i+1) + '</span>'
+      + '<div class="rec-body"><div class="rec-title">' + esc(n.title) + '</div>'
+      + '<div class="rec-why">' + esc(reasonFor(id, n)) + '</div></div>'
+      + '<span class="rec-arrow">›</span></li>').join("") + '</ol>';
+  }
+  html += '</div>';
+
+  html += '<div class="card"><div class="card-head">复习队列<span class="pill">' + due.length + '</span></div>';
+  if (!due.length) html += '<div class="empty">今天没有到期的节点，专注学新的。</div>';
+  else {
+    html += '<div class="due-list">' + due.slice(0, 4).map(n =>
+      '<div class="due-item"><span class="bd"></span>' + esc(n.title) + '<span>' + masteryOf(id, n.id) + '/5</span></div>').join("") + '</div>';
+    html += '<button class="btn primary" data-action="review">开始复习 ' + due.length + ' 张</button>';
+  }
+  html += '</div>';
+
+  html += '<div class="card"><div class="card-head">AI 教练</div>'
+    + '<p class="muted small" style="margin:0 0 10px">结合当前图谱给出下一步建议：拆细卡住的节点、补齐被跳过的基础、提前解锁瓶颈。</p>'
+    + '<button class="btn ghost" data-action="ai">打开 AI 规划</button></div>';
+
+  html += '<div class="rail-foot"><button class="link" data-action="reset">重置演示数据</button>'
+    + '<span class="muted small">' + xp + ' XP · 存本机</span></div>';
+
+  $("#rail").innerHTML = html;
+}
+
+/* ================= render: scene ================= */
+function nodeMarkup(id, n, selectedId, query){
+  const p = posOf(id, n), s = sizeOf(n), stt = statusOf(id, n.id), m = masteryOf(id, n.id);
+  const w = s.w, h = s.h, hw = w/2, hh = h/2;
+  const isMilestone = n.type === "milestone";
+  const titleFont = '600 14px "PingFang SC","Microsoft YaHei",system-ui,sans-serif';
+  const subFont = '400 10.5px "PingFang SC","Microsoft YaHei",system-ui,sans-serif';
+  const titleLines = wrapPx(n.title, w - 34, titleFont, 2);
+  const subLine = wrapPx(n.sub || "", w - 32, subFont, 1)[0];
+  const typeColor = (TYPE[n.type] || TYPE.concept).color;
+
+  let cls = "node st-" + stt;
+  if (selectedId === n.id) cls += " sel";
+  if (query){
+    const hay = (n.title + " " + (n.sub || "") + " " + (n.desc || "")).toLowerCase();
+    cls += hay.includes(query.toLowerCase()) ? " match" : " dim";
+  }
+
+  let g = "";
+  if (stt === "available") g += '<rect class="halo" x="' + (-hw-3) + '" y="' + (-hh-3) + '" width="' + (w+6) + '" height="' + (h+6) + '" rx="17"/>';
+  g += '<rect class="box" x="' + -hw + '" y="' + -hh + '" width="' + w + '" height="' + h + '" rx="14"/>';
+  g += '<rect class="selring" x="' + (-hw-5) + '" y="' + (-hh-5) + '" width="' + (w+10) + '" height="' + (h+10) + '" rx="18"/>';
+  g += '<rect class="accent" x="' + -hw + '" y="' + -hh + '" width="4" height="' + h + '" rx="2" fill="' + typeColor + '"/>';
+
+  const tx = -hw + 17;
+  const ty = titleLines.length === 2 ? -16 : -7;
+  g += '<text class="ttl" x="' + tx + '" y="' + ty + '">' + titleLines.map((ln, i) =>
+    '<tspan x="' + tx + '" dy="' + (i === 0 ? 0 : 17) + '">' + esc(ln) + '</tspan>').join("") + '</text>';
+  const sy = titleLines.length === 2 ? 15 : 13;
+  g += '<text class="sub" x="' + tx + '" y="' + sy + '">' + esc(subLine) + '</text>';
+
+  if (stt === "learning"){
+    const pw = w - 34, ratio = clamp(m / 5, 0, 1);
+    g += '<rect class="prog-track" x="' + tx + '" y="' + (hh - 9) + '" width="' + pw + '" height="2.6" rx="1.3"/>';
+    g += '<rect class="prog-fill" x="' + tx + '" y="' + (hh - 9) + '" width="' + (pw*ratio) + '" height="2.6" rx="1.3"/>';
+  } else {
+    for (let i = 0; i < 5; i++){
+      g += '<circle class="dot' + (i < m ? " on" : "") + '" cx="' + (tx + i*10) + '" cy="' + (hh - 15) + '" r="2.7"/>';
+    }
+  }
+
+  if (stt === "mastered"){
+    g += '<circle cx="' + (hw-16) + '" cy="' + (-hh+16) + '" r="9" fill="#fbbf24" opacity=".95"/>'
+      + '<text class="glyph-c" x="' + (hw-16) + '" y="' + (-hh+16) + '" fill="#0b1220">✓</text>';
+  } else if (stt === "review"){
+    g += '<circle cx="' + (hw-16) + '" cy="' + (-hh+16) + '" r="9" fill="#f472b6" opacity=".95"/>'
+      + '<text class="glyph-c" x="' + (hw-16) + '" y="' + (-hh+16) + '" fill="#1a0a12">↻</text>';
+  } else if (stt === "locked"){
+    g += '<g transform="translate(' + (hw-16) + ',' + (-hh+16) + ') scale(.92)">'
+      + '<rect class="padlock" x="-5.5" y="-2" width="11" height="8.5" rx="1.8"/>'
+      + '<path class="padlock" d="M-3 -2v-2.6a3 3 0 0 1 6 0V-2"/>'
+      + (n.type === "milestone" ? '<path class="padlock" d="M0 1v2.5"/>' : '')
+      + '</g>';
+  }
+
+  return '<g class="' + cls + '" data-action="select" data-id="' + n.id + '" transform="translate(' + p.x + ' ' + p.y + ')" role="button" tabindex="0" aria-label="' + esc(n.title) + ' · ' + statusLabel(stt) + '">' + g + '</g>';
+}
+
+function edgeMarkup(id, e){
+  const a = nodeById(id, e.from), b = nodeById(id, e.to);
+  if (!a || !b) return "";
+  const pa = posOf(id, a), pb = posOf(id, b);
+  const sa = sizeOf(a), sb = sizeOf(b);
+  const x1 = pa.x + sa.w/2, y1 = pa.y, x2 = pb.x - sb.w/2, y2 = pb.y;
+  const dx = Math.max(46, (x2 - x1) * 0.45);
+  const d = "M" + x1 + "," + y1 + " C" + (x1+dx) + "," + y1 + " " + (x2-dx) + "," + y2 + " " + x2 + "," + y2;
+  const on = masteryOf(id, e.from) >= 3 && masteryOf(id, e.to) > 0;
+  return '<path class="edge' + (on ? " on" : "") + '" d="' + d + '"/>';
+}
+
+function renderScene(){
+  const id = bpId(), selectedId = selected;
+  const query = ($("#search").value || "").trim();
+  const parts = [];
+  for (const e of edgesOf(id)) parts.push(edgeMarkup(id, e));
+  for (const n of nodesOf(id)) parts.push(nodeMarkup(id, n, selectedId, query));
+  vp.innerHTML = parts.join("");
+  applyView();
+}
+
+/* ================= render: inspector ================= */
+let selected = null;
+function renderInspector(){
+  const el = $("#inspector");
+  if (!selected){ el.classList.remove("open"); el.innerHTML = ""; return; }
+  const id = bpId(), n = nodeById(id, selected);
+  if (!n){ selected = null; el.classList.remove("open"); return; }
+  const s = st(id).nodes[n.id], m = s.m, stt = statusOf(id, n.id);
+  const pre = prereqsOf(id, n.id), dep = dependentsOf(id, n.id);
+  const dotColor = {locked:"#4b5a74", available:"#38bdf8", learning:"#f59e0b", mastered:"#fbbf24", review:"#f472b6"};
+
+  const relRow = (nid, dir) => {
+    const x = nodeById(id, nid); if (!x) return "";
+    const xs = statusOf(id, nid);
+    return '<button class="rel" data-action="select" data-id="' + nid + '">'
+      + '<i style="background:' + dotColor[xs] + '"></i>' + esc(x.title)
+      + '<span class="arrow">' + (dir === "in" ? "前置" : "解锁后") + '</span></button>';
+  };
+
+  let html = '<div class="i-head"><span class="chip" style="border-color:' + (TYPE[n.type]||TYPE.concept).color + '55;color:' + (TYPE[n.type]||TYPE.concept).color + '">'
+    + (TYPE[n.type]||TYPE.concept).label + '</span>'
+    + '<span class="chip">' + statusLabel(stt) + '</span>'
+    + (n.hours ? '<span class="chip">' + n.hours + 'h</span>' : '')
+    + '<button class="i-close" data-action="close-inspector" aria-label="关闭">✕</button></div>'
+    + '<h2 class="i-title">' + esc(n.title) + '</h2>'
+    + '<div class="i-sub">' + esc(n.sub || "") + '</div>'
+    + (n.desc ? '<div class="i-desc">' + esc(n.desc) + '</div>' : '');
+
+  html += '<div class="sec"><div class="sec-t">掌握度</div><div class="mastery-row">'
+    + [0,1,2,3,4,5].map(v =>
+      '<button class="mbtn' + (m === v ? " on" : "") + '" data-action="mastery" data-v="' + v + '">'
+      + '<b>' + v + '</b>' + MLABEL[v] + '</button>').join("")
+    + '</div><div class="i-hint">' + MHINT[m] + '</div></div>';
+
+  html += '<div class="sec"><div class="sec-t">证据<span class="line"></span>'
+    + '<button class="link" data-action="calc">按证据计算</button></div>'
+    + '<div class="ev-grid">'
+    + [["self","自评"],["quiz","测验"],["artifact","产出物"],["ai","AI 追问"]].map(([k, label]) =>
+      '<button class="ev' + (s.ev[k] ? " on" : "") + '" data-action="ev" data-k="' + k + '">'
+      + '<span class="boxc">✓</span>' + label + '</button>').join("")
+    + '</div><div class="i-hint">四类证据加权：自评 20% · 测验 40% · 产出 25% · AI 15%</div></div>';
+
+  if (pre.length || dep.length){
+    html += '<div class="sec"><div class="sec-t">依赖关系</div><div class="rel-list">';
+    if (pre.length) pre.forEach(p => html += relRow(p, "in"));
+    else html += '<div class="rel empty-rel">无前置，可直接开始</div>';
+    if (dep.length) dep.forEach(d => html += relRow(d, "out"));
+    html += '</div></div>';
+  }
+
+  html += '<div class="sec"><div class="sec-t">笔记<span class="line"></span></div>'
+    + '<textarea class="note-area" id="noteArea" placeholder="用自己的话写一遍。写不出来，说明还没真懂。">' + esc(s.note || "") + '</textarea>'
+    + '<div class="save-tip" id="saveTip">已保存到本机</div></div>';
+
+  html += '<div class="sec"><div class="sec-t">资源<span class="line"></span></div>';
+  if (s.res.length){
+    html += s.res.map(r => '<div class="res-item"><span class="rk">链接</span>'
+      + '<a href="' + esc(r.u || "#") + '" target="_blank" rel="noopener">' + esc(r.l) + '</a></div>').join("");
+  } else html += '<div class="empty">还没有资源，加一个课程或文档链接。</div>';
+  html += '<form class="res-form" data-form="res"><input class="l" name="label" placeholder="资源名" maxlength="40">'
+    + '<input class="u" name="url" placeholder="https://" maxlength="200">'
+    + '<button type="submit">＋</button></form></div>';
+
+  html += '<div class="sec"><div class="sec-t">复习</div>'
+    + '<div class="i-hint" style="margin:0 0 8px">' + (s.dueAt
+        ? (isDue(s) ? "已到期 · " : "下次复习 · ") + new Date(s.dueAt).toLocaleDateString("zh-CN")
+        : "尚未安排复习")
+    + ' · 间隔 ' + (s.iv || 1) + ' 天</div>'
+    + '<button class="btn ghost" data-action="schedule">安排 7 天后复习</button></div>';
+
+  html += '<div class="actions">'
+    + '<div class="row2">'
+    + (m < 4
+        ? '<button class="btn ghost" data-action="start">开始学习</button><button class="btn primary" data-action="light">标记点亮</button>'
+        : '<button class="btn primary" data-action="review-one">立即复习</button><button class="btn ghost" data-action="unlight">退回学习中</button>')
+    + '</div>'
+    + (editMode ? '<button class="btn danger" data-action="delete">删除节点</button>' : '')
+    + '</div>';
+
+  el.innerHTML = html;
+  el.classList.add("open");
+
+  const ta = $("#noteArea");
+  ta.addEventListener("input", () => {
+    st(id).nodes[n.id].note = ta.value;
+    save();
+    const tip = $("#saveTip");
+    tip.classList.add("show");
+    clearTimeout(tip._t);
+    tip._t = setTimeout(() => tip.classList.remove("show"), 1100);
+  });
+}
+
+/* ================= actions ================= */
+let editMode = false;
+
+function refresh(){ renderTopbar(); renderRail(); renderScene(); renderInspector(); }
+
+function setMastery(nid, v){
+  const id = bpId(), s = st(id).nodes[nid];
+  if (!s) return;
+  const before = s.m;
+  s.m = v;
+  if (v >= 4){
+    if (!s.dueAt) s.dueAt = Date.now() + days(7);
+    s.iv = Math.max(s.iv || 0, 7);
+  } else if (v === 0){
+    s.dueAt = null;
+  }
+  save();
+  let unlocked = null;
+  if (before < 4 && v >= 4){
+    unlocked = nodesOf(id).filter(n =>
+      n.id !== nid && st(id).nodes[n.id].m === 0 &&
+      prereqsOf(id, n.id).every(p => masteryOf(id, p) >= 3) &&
+      prereqsOf(id, n.id).some(p => p === nid));
+    const name = nodeById(id, nid).title;
+    toast("gold", "✓", "「" + name + "」已点亮" + (unlocked.length ? " · 解锁 " + unlocked.length + " 个节点" : ""));
+    unlocked.forEach(n => toast("cyan", "◆", "解锁：" + n.title, 2200));
+  }
+  refresh();
+  if (unlocked){
+    requestAnimationFrame(() => ripple(nid));
+  }
+}
+function ripple(nid){
+  const id = bpId(), n = nodeById(id, nid); if (!n) return;
+  const p = posOf(id, n), s = sizeOf(n);
+  const g = document.createElementNS(SVGNS, "g");
+  g.setAttribute("transform", "translate(" + p.x + " " + p.y + ")");
+  const r = document.createElementNS(SVGNS, "rect");
+  r.setAttribute("class", "ripple");
+  r.setAttribute("x", -s.w/2 - 4); r.setAttribute("y", -s.h/2 - 4);
+  r.setAttribute("width", s.w + 8); r.setAttribute("height", s.h + 8);
+  r.setAttribute("rx", 18);
+  g.appendChild(r); vp.appendChild(g);
+  setTimeout(() => g.remove(), 1000);
+}
+function toast(kind, icon, text, ms){
+  const t = document.createElement("div");
+  t.className = "toast " + kind;
+  t.innerHTML = '<span class="i">' + esc(icon) + '</span><span>' + esc(text) + '</span>';
+  $("#toasts").appendChild(t);
+  setTimeout(() => { t.classList.add("out"); setTimeout(() => t.remove(), 320); }, ms || 2600);
+}
+function selectNode(nid){
+  selected = nid;
+  $("#hint").classList.add("hide");
+  renderScene();
+  renderInspector();
+  const el = $("#inspector");
+  if (el) el.scrollTop = 0;
+}
+function closeInspector(){ selected = null; renderScene(); renderInspector(); }
+
+/* ================= review ================= */
+let reviewQueue = [], reviewIdx = 0, reviewStat = {again:0, hard:0, good:0};
+function startReview(){
+  const id = bpId();
+  const due = nodesOf(id).filter(n => statusOf(id, n.id) === "review");
+  if (!due.length){ toast("cyan", "✓", "今天没有到期的节点，去学新的吧"); return; }
+  reviewQueue = due.slice(0, 20); reviewIdx = 0; reviewStat = {again:0, hard:0, good:0};
+  renderReviewCard();
+}
+function renderReviewCard(){
+  if (reviewIdx >= reviewQueue.length){ finishReview(); return; }
+  const n = reviewQueue[reviewIdx];
+  const body = '<div class="modal-card">'
+    + '<div class="m-head"><div><div class="kicker">复习 · ' + (reviewIdx+1) + " / " + reviewQueue.length + '</div>'
+    + '<h3>主动回忆</h3></div><button class="m-close" data-action="close-modal">✕</button></div>'
+    + '<div class="q">用自己的话解释「' + esc(n.title) + '」</div>'
+    + '<div class="q-hint">' + esc(n.desc || n.sub || "") + '</div>'
+    + '<div class="ans">'
+    + '<button class="no" data-action="answer" data-r="again">想不起来（明天再来）</button>'
+    + '<button class="mid" data-action="answer" data-r="hard">有点模糊（缩短间隔）</button>'
+    + '<button class="yes" data-action="answer" data-r="good">讲清楚了（拉长间隔）</button>'
+    + '</div>'
+    + '<div class="progressbar"><i style="width:' + ((reviewIdx / reviewQueue.length)*100) + '%"></i></div>'
+    + '</div>';
+  showModal(body);
+}
+function answerReview(kind){
+  const id = bpId(), n = reviewQueue[reviewIdx];
+  const s = st(id).nodes[n.id];
+  if (kind === "again"){
+    s.iv = 1; s.m = Math.max(2, s.m - 1); s.lapses = (s.lapses || 0) + 1;
+    s.dueAt = Date.now() + days(1); reviewStat.again++;
+  } else if (kind === "hard"){
+    s.iv = clamp(Math.round((s.iv || 3) * 1.2), 1, 75);
+    s.dueAt = Date.now() + days(s.iv); reviewStat.hard++;
+  } else {
+    s.iv = clamp(Math.round((s.iv || 7) * 2.2), 1, 75);
+    s.m = Math.min(5, s.m + 1);
+    s.dueAt = Date.now() + days(s.iv); reviewStat.good++;
+  }
+  save();
+  reviewIdx++;
+  renderReviewCard();
+}
+function finishReview(){
+  closeModal();
+  const total = reviewStat.again + reviewStat.hard + reviewStat.good;
+  const rate = total ? Math.round((reviewStat.hard + reviewStat.good) / total * 100) : 0;
+  toast("pink", "↻", "复习完成 · 保持率 " + rate + "%");
+  refresh();
+}
+
+/* ================= modal ================= */
+function showModal(inner){
+  $("#modalCard").innerHTML = inner;
+  $("#modal").classList.add("show");
+}
+function closeModal(){
+  $("#modal").classList.remove("show");
+  $("#modalCard").innerHTML = "";
+}
+function openAI(){
+  const id = bpId();
+  const cfg = aiConfig();
+  const locked = nodesOf(id).filter(n => statusOf(id, n.id) === "locked")
+    .map(n => ({n, score:downstreamCount(id, n.id)})).sort((a, b) => b.score - a.score);
+  const weak = nodesOf(id).filter(n => statusOf(id, n.id) === "learning")
+    .sort((a, b) => downstreamCount(id, b.id) - downstreamCount(id, a.id));
+  const stuck = locked[0], base = weak[0];
+  const pick = recommend(id, 1)[0];
+  const body = '<div class="modal-card">'
+    + '<div class="m-head"><div><div class="kicker">AI 教练</div><h3>下一步怎么走</h3></div>'
+    + '<button class="m-close" data-action="close-modal">✕</button></div>'
+    + '<div class="ai-status' + (cfg.key ? " on" : "") + '"><span class="led"></span>'
+    + (cfg.key ? "DeepSeek 已配置 · " + esc(cfg.model) : "未配置 API Key · 当前只显示本地规则")
+    + '<button class="link" style="margin-left:auto" data-action="settings">设置</button></div>'
+    + '<div class="demo-note">下面三条由当前图谱本地计算（解锁价值 / 半途节点 / 瓶颈路径），不需要联网；配好 Key 后可让 DeepSeek 结合你的笔记与掌握史再给一轮建议。</div>'
+    + '<div class="sug">'
+    + (stuck ? '<div class="sug-item"><div class="ic">✂</div><div><b>拆细「' + esc(stuck.n.title) + '」</b>'
+        + '<p>它在你锁定的节点里解锁价值最高（下游 ' + stuck.score + ' 个），但预计 ' + (stuck.n.hours||0) + 'h 太重。建议拆成 3 个可在 2 小时内完成的子节点。</p></div></div>' : "")
+    + (base ? '<div class="sug-item"><div class="ic">⌁</div><div><b>补完「' + esc(base.title) + '」</b>'
+        + '<p>它已经有 ' + masteryOf(id, base.id) + '/5 的掌握度，但停在这里会卡住后面 ' + downstreamCount(id, base.id) + ' 个节点。一次 45 分钟的收尾就能过关。</p></div></div>' : "")
+    + '<div class="sug-item"><div class="ic">⚡</div><div><b>本周目标：点亮 2 个节点</b>'
+        + '<p>按当前 ' + nodesOf(id).filter(n => statusOf(id, n.id) === "available").length + ' 个可学节点估算，这是不打断节奏的最小推进量。</p></div></div>'
+    + '</div>'
+    + (cfg.key ? '<button class="btn ghost" style="margin-bottom:8px" data-action="ai-generate">让 DeepSeek 分析这张图</button>' : '')
+    + '<div id="aiLive"></div>'
+    + '<div class="m-foot"><button class="btn ghost" data-action="close-modal">知道了</button>'
+    + (pick ? '<button class="btn primary" data-action="ai-go">去学「' + esc(pick.title) + '」</button>' : '')
+    + '</div>'
+    + '</div>';
+  showModal(body);
+}
+
+/* ================= AI：DeepSeek 接入（Key 由用户自行填写） ================= */
+const AI_LS = "bluemap.ai.v1";
+const AI_DEFAULT = { baseURL: "https://api.deepseek.com", model: "deepseek-chat", key: "" };
+
+function aiConfig(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(AI_LS) || "null");
+    return Object.assign({}, AI_DEFAULT, raw || {});
+  }catch(e){ return Object.assign({}, AI_DEFAULT); }
+}
+function saveAIConfig(cfg){
+  try{ localStorage.setItem(AI_LS, JSON.stringify(cfg)); }catch(e){}
+}
+function aiURL(path){
+  return (aiConfig().baseURL || AI_DEFAULT.baseURL).replace(/\/+$/, "") + path;
+}
+function readAIFields(){
+  return {
+    baseURL: (($("#aiBase") || {}).value || "").trim() || AI_DEFAULT.baseURL,
+    model: (($("#aiModel") || {}).value || "").trim() || AI_DEFAULT.model,
+    key: (($("#aiKey") || {}).value || "").trim()
+  };
+}
+async function askDeepSeek(prompt){
+  const cfg = aiConfig();
+  if (!cfg.key) throw new Error("NO_KEY");
+  const res = await fetch(aiURL("/chat/completions"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + cfg.key },
+    body: JSON.stringify({
+      model: cfg.model,
+      temperature: 0.4,
+      messages: [
+        { role: "system", content: "你是一个务实的软件学习教练。只给可执行的建议，不寒暄，不重复用户的话。" },
+        { role: "user", content: prompt }
+      ]
+    })
+  });
+  if (!res.ok){
+    let detail = "";
+    try{ detail = (await res.text()).slice(0, 160); }catch(e){}
+    throw new Error("HTTP " + res.status + (detail ? "：" + detail : ""));
+  }
+  const data = await res.json();
+  const out = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+  if (!out) throw new Error("EMPTY_RESPONSE");
+  return out;
+}
+function aiErrorText(err){
+  const msg = String((err && err.message) || err);
+  if (msg === "NO_KEY") return "还没有填写 API Key。点右上角 ⚙ 填入后即可使用。";
+  if (/Failed to fetch|NetworkError|Load failed/i.test(msg)){
+    return "请求没有发出去：多半是浏览器拦截了跨域（file:// 页面无法直连 api.deepseek.com），或网络不通。正式版会通过 /api/deepseek 代理转发。";
+  }
+  if (msg.indexOf("HTTP 401") === 0) return "Key 无效或已过期（401），请重新填写。";
+  if (msg.indexOf("HTTP 402") === 0) return "账户余额不足（402）。";
+  if (msg.indexOf("HTTP 429") === 0) return "请求太频繁（429），稍后再试。";
+  if (msg === "EMPTY_RESPONSE") return "模型返回了空内容，换个模型名再试。";
+  return msg;
+}
+
+function openSettings(){
+  const c = aiConfig();
+  showModal('<div class="modal-card">'
+    + '<div class="m-head"><div><div class="kicker">设置</div><h3>AI 接入 · DeepSeek</h3></div>'
+    + '<button class="m-close" data-action="close-modal">✕</button></div>'
+    + '<div class="demo-note">Key 只保存在这台机器的浏览器里（localStorage），不会上传到任何服务器。公共电脑上请不要填写。</div>'
+    + '<div class="field"><label>API Base URL</label><input id="aiBase" value="' + esc(c.baseURL) + '" spellcheck="false"></div>'
+    + '<div class="field"><label>模型</label><input id="aiModel" value="' + esc(c.model) + '" spellcheck="false"></div>'
+    + '<div class="field"><label>API Key</label><input id="aiKey" type="password" value="' + esc(c.key) + '" placeholder="sk-..." spellcheck="false"></div>'
+    + '<div class="m-foot"><button class="btn ghost" data-action="ai-test">测试连接</button>'
+    + '<button class="btn primary" data-action="ai-save">保存</button></div>'
+    + '<div id="aiTest" class="i-hint" style="margin-top:10px"></div>'
+    + '</div>');
+}
+async function testAI(){
+  const cfg = readAIFields();
+  const box = $("#aiTest");
+  if (!box) return;
+  if (!cfg.key){ box.style.color = "#fda4af"; box.textContent = "先填 Key 再测试。"; return; }
+  box.style.color = ""; box.textContent = "测试中…";
+  try{
+    const res = await fetch(cfg.baseURL.replace(/\/+$/, "") + "/models", {
+      headers: { "Authorization": "Bearer " + cfg.key }
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const names = (data && data.data ? data.data : []).map(function(m){ return m.id; }).slice(0, 4).join("、");
+    box.style.color = "#34d399";
+    box.textContent = "连接正常" + (names ? " · 可用模型：" + names : "");
+  }catch(err){
+    box.style.color = "#fda4af";
+    box.textContent = aiErrorText(err);
+  }
+}
+async function aiGenerate(){
+  const live = $("#aiLive");
+  if (!live) return;
+  const id = bpId();
+  const nodes = nodesOf(id);
+  const mastered = nodes.filter(function(n){ return masteryOf(id, n.id) >= 4; }).map(function(n){ return n.title; });
+  const learning = nodes.filter(function(n){ return statusOf(id, n.id) === "learning"; })
+    .map(function(n){ return n.title + " " + masteryOf(id, n.id) + "/5"; });
+  const avail = nodes.filter(function(n){ return statusOf(id, n.id) === "available"; }).map(function(n){ return n.title; });
+  const prompt = [
+    "学习蓝图：《" + BP_DEF(id).title + "》",
+    "目标：" + BP_DEF(id).goal,
+    "已掌握（≥4/5）：" + (mastered.join("、") || "无"),
+    "学习中：" + (learning.join("、") || "无"),
+    "可学未开始：" + (avail.join("、") || "无"),
+    "请给出 3 条下一步建议，每条一行，格式：建议｜理由（理由不超过 30 字）。只输出这 3 行。"
+  ].join("\n");
+
+  live.innerHTML = '<div class="i-hint" style="margin-top:12px">DeepSeek 正在分析你的图谱…</div>';
+  try{
+    const text = await askDeepSeek(prompt);
+    live.innerHTML = '<div class="ai-out">' + esc(text).replace(/\n/g, "<br>") + '</div>';
+  }catch(err){
+    live.innerHTML = '<div class="ai-err">' + esc(aiErrorText(err)) + '</div>';
+  }
+}
+
+/* ================= edit ================= */
+function toggleEdit(){
+  editMode = !editMode;
+  $("#editBtn").classList.toggle("on", editMode);
+  toast(editMode ? "cyan" : "gold", editMode ? "✎" : "✓", editMode ? "编辑模式：拖动节点位置，可删除节点" : "已退出编辑模式");
+  renderInspector();
+}
+function addNode(){
+  const id = bpId();
+  const cx = (stage.clientWidth/2 - view.x) / view.k;
+  const cy = (stage.clientHeight/2 - view.y) / view.k;
+  const node = {id:"custom-" + Date.now().toString(36), title:"新节点", sub:"双击右侧改内容", type:"concept", tier:0, row:0, hours:4, init:0,
+    desc:"在右侧面板补上说明、资源和判断标准。", res:[], custom:true};
+  st(id).custom.push(node);
+  st(id).nodes[node.id] = {m:0, note:"", lapses:0, dueAt:null, iv:0, ev:{self:false,quiz:false,artifact:false,ai:false}, res:[]};
+  st(id).pos[node.id] = [cx, cy];
+  save(); refresh(); selectNode(node.id);
+}
+function deleteNode(nid){
+  const id = bpId(), n = nodeById(id, nid);
+  if (!n) return;
+  const deps = dependentsOf(id, nid).length;
+  if (!confirm("删除「" + n.title + "」？" + (deps ? "将同时断开 " + deps + " 条依赖。" : ""))) return;
+  const s = st(id);
+  if (n.custom) s.custom = s.custom.filter(c => c.id !== nid);
+  else (s.hidden = s.hidden || []).push(nid);
+  delete s.pos[nid];
+  selected = null;
+  save(); refresh();
+  toast("pink", "✕", "已删除 " + n.title);
+}
+
+/* ================= pointer / zoom ================= */
+let drag = null, suppressUntil = 0;
+svg.addEventListener("pointerdown", e => {
+  if (e.button !== 0) return;
+  const g = e.target.closest && e.target.closest(".node");
+  if (g && editMode){
+    const nid = g.dataset.id, n = nodeById(bpId(), nid);
+    const p = posOf(bpId(), n);
+    drag = {type:"node", nid, sx:e.clientX, sy:e.clientY, ox:p.x, oy:p.y, moved:false};
+    dragPos = {};
+    svg.setPointerCapture(e.pointerId);
+    return;
+  }
+  drag = {type:"pan", sx:e.clientX, sy:e.clientY, ox:view.x, oy:view.y, moved:false};
+  stage.classList.add("grabbing");
+  svg.setPointerCapture(e.pointerId);
+});
+svg.addEventListener("pointermove", e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+  if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+  if (!drag.moved) return;
+  if (drag.type === "pan"){
+    cancelAnimationFrame(tweenId);
+    view.x = drag.ox + dx; view.y = drag.oy + dy; applyView();
+  } else {
+    dragPos[drag.nid] = {x:drag.ox + dx/view.k, y:drag.oy + dy/view.k};
+    renderScene();
+  }
+});
+function endDrag(e){
+  if (!drag) return;
+  const d = drag; drag = null;
+  stage.classList.remove("grabbing");
+  if (d.type === "node"){
+    if (d.moved && dragPos[d.nid]){
+      st(bpId()).pos[d.nid] = [dragPos[d.nid].x, dragPos[d.nid].y];
+      save();
+    }
+    dragPos = null;
+    renderScene();
+    if (d.moved) suppressUntil = Date.now() + 260;
+  } else if (d.moved){
+    suppressUntil = Date.now() + 120;
+  }
+  try{ svg.releasePointerCapture(e.pointerId); }catch(err){}
+}
+svg.addEventListener("pointerup", endDrag);
+svg.addEventListener("pointercancel", endDrag);
+
+stage.addEventListener("wheel", e => {
+  e.preventDefault();
+  const r = stage.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const k2 = clamp(view.k * Math.exp(-e.deltaY * 0.0013), 0.28, 2.2);
+  cancelAnimationFrame(tweenId);
+  view.x = mx - (mx - view.x) * (k2 / view.k);
+  view.y = my - (my - view.y) * (k2 / view.k);
+  view.k = k2;
+  applyView();
+}, {passive:false});
+
+function zoomBy(f){
+  const cx = stage.clientWidth/2, cy = stage.clientHeight/2;
+  const k2 = clamp(view.k * f, 0.28, 2.2);
+  tweenView({k:k2, x:cx - (cx - view.x) * (k2/view.k), y:cy - (cy - view.y) * (k2/view.k)}, 220);
+}
+
+/* ================= click router ================= */
+const ACTIONS = {
+  "tab": el => { DB.active = el.dataset.id; selected = null; save(); refresh(); fitView(true); },
+  "select": el => { if (Date.now() < suppressUntil) return; selectNode(el.dataset.id); },
+  "close-inspector": () => closeInspector(),
+  "mastery": el => setMastery(selected, parseInt(el.dataset.v, 10)),
+  "ev": el => {
+    const s = ns(selected), k = el.dataset.k;
+    s.ev[k] = !s.ev[k]; save(); renderInspector();
+  },
+  "calc": () => {
+    const s = ns(selected);
+    const raw = (s.ev.self ? .2 : 0) + (s.ev.quiz ? .4 : 0) + (s.ev.artifact ? .25 : 0) + (s.ev.ai ? .15 : 0);
+    const v = clamp(Math.round(raw * 5), 0, 5);
+    toast("cyan", "∑", "证据得分 " + raw.toFixed(2) + " → 掌握度 " + v);
+    setMastery(selected, v);
+  },
+  "start": () => setMastery(selected, 1),
+  "light": () => setMastery(selected, 4),
+  "unlight": () => setMastery(selected, 3),
+  "schedule": () => {
+    const s = ns(selected);
+    s.iv = 7; s.dueAt = Date.now() + days(7); save(); renderInspector();
+    toast("cyan", "◷", "已安排在 7 天后复习");
+  },
+  "review-one": () => {
+    reviewQueue = [nodeById(bpId(), selected)]; reviewIdx = 0; reviewStat = {again:0,hard:0,good:0};
+    renderReviewCard();
+  },
+  "review": () => startReview(),
+  "answer": el => answerReview(el.dataset.r),
+  "close-modal": () => closeModal(),
+  "ai": () => openAI(),
+  "ai-go": () => {
+    closeModal();
+    const n = recommend(bpId(), 1)[0];
+    if (n){ selectNode(n.id); centerOn(n.id); }
+  },
+  "settings": () => openSettings(),
+  "ai-save": () => {
+    saveAIConfig(readAIFields());
+    closeModal();
+    toast("cyan", "✓", "AI 配置已保存到本机");
+  },
+  "ai-test": () => testAI(),
+  "ai-generate": () => aiGenerate(),
+  "fit": () => fitView(true),
+  "zoom-in": () => zoomBy(1.25),
+  "zoom-out": () => zoomBy(0.8),
+  "edit": () => toggleEdit(),
+  "add-node": () => addNode(),
+  "delete": () => deleteNode(selected),
+  "reset": () => {
+    if (!confirm("重置所有演示数据？掌握度、笔记、复习记录都会清空。")) return;
+    localStorage.removeItem(LS_KEY); location.reload();
+  }
+};
+document.addEventListener("click", e => {
+  const el = e.target.closest && e.target.closest("[data-action]");
+  if (!el) return;
+  const fn = ACTIONS[el.dataset.action];
+  if (fn){ e.preventDefault(); fn(el); }
+});
+document.addEventListener("submit", e => {
+  const f = e.target;
+  if (!f.matches || !f.matches('form[data-form="res"]')) return;
+  e.preventDefault();
+  const label = f.querySelector('input[name="label"]').value.trim();
+  const url = f.querySelector('input[name="url"]').value.trim();
+  if (!label) return;
+  ns(selected).res.push({l:label, u:url || "#"});
+  save(); renderInspector();
+  toast("cyan", "＋", "已添加资源：" + label);
+});
+
+/* ================= keyboard ================= */
+document.addEventListener("keydown", e => {
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (tag === "input" || tag === "textarea"){
+    if (e.key === "Escape") e.target.blur();
+    return;
+  }
+  if (e.key === "/"){ e.preventDefault(); $("#search").focus(); return; }
+  if (e.key === "Escape"){ closeModal(); closeInspector(); return; }
+  if (e.key === "f" || e.key === "F"){ fitView(true); return; }
+  if (e.key === "e" || e.key === "E"){ toggleEdit(); return; }
+  if (e.key === "n" || e.key === "N"){
+    if (editMode) addNode();
+    else toast("cyan", "✎", "按 E 进入编辑模式后可新建节点");
+    return;
+  }
+  if (e.key === "Delete" || e.key === "Backspace"){ if (editMode && selected) deleteNode(selected); }
+});
+
+/* ================= search ================= */
+$("#search").addEventListener("input", () => { renderScene(); });
+$("#search").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  const q = ($("#search").value || "").trim().toLowerCase();
+  if (!q) return;
+  const hit = nodesOf(bpId()).find(n => (n.title + " " + (n.sub || "")).toLowerCase().includes(q));
+  if (hit){ selectNode(hit.id); centerOn(hit.id); }
+  else toast("pink", "?", "没有匹配的节点");
+});
+
+/* ================= boot ================= */
+DB = loadDB();
+(function initFromQuery(){
+  const p = new URLSearchParams(location.search);
+  const b = p.get("bp");
+  if (b && BP_DEF(b)) DB.active = b;
+  const n = p.get("node");
+  if (n && nodeById(DB.active, n)) selected = n;
+  const m = p.get("modal");
+  if (m === "ai") setTimeout(openAI, 80);
+  if (m === "review") setTimeout(startReview, 80);
+  if (m === "settings") setTimeout(openSettings, 80);
+})();
+renderTopbar();
+renderRail();
+renderScene();
+renderInspector();
+requestAnimationFrame(() => fitView(false));
+window.addEventListener("resize", () => { applyView(); });
+
+/* ================= self test ================= */
+(function selfTest(){
+  if (!/[?&]selftest/.test(location.search)) return;
+  const res = [], snap = JSON.stringify(DB);
+  const ok = (name, cond) => res.push((cond ? "PASS " : "FAIL ") + name);
+  const id = "se";
+  ok("node count 27", nodesOf(id).length === 27);
+  ok("edge count 42", edgesOf(id).length === 42);
+  ok("all edges forward", edgesOf(id).every(e => {
+    const a = nodeById(id, e.from), b = nodeById(id, e.to);
+    return a && b && a.tier < b.tier;
+  }));
+  ok("no cycle", hasCycle(id) === false);
+  ok("cycle detected on fake graph", detectCycle(["a","b"], [{from:"a",to:"b"},{from:"b",to:"a"}]) === true);
+  ok("db available", statusOf(id, "db") === "available");
+  ok("algo locked", statusOf(id, "algo") === "locked");
+  ok("cli learning", statusOf(id, "cli") === "learning");
+  ok("oop review due", statusOf(id, "oop") === "review");
+  ok("xp 686", computeXP(id) === 686);
+  ok("level 4", levelInfo(computeXP(id)).level === 4);
+  st(id).nodes["math-disc"].m = 4;
+  ok("algo unlocked after math mastered", statusOf(id, "algo") === "available");
+  ok("recommend returns 3", recommend(id, 3).length === 3);
+  ok("reason non-empty", recommend(id, 3).every(n => reasonFor(id, n).length > 4));
+  ok("blueprint count 4", BLUEPRINTS.length === 4);
+  ok("blueprint order", BLUEPRINTS.map(function(x){ return x.id; }).join(",") === "emb,vue,react,se");
+  BLUEPRINTS.forEach(function(bp){
+    const ns = nodesOf(bp.id), es = edgesOf(bp.id);
+    ok(bp.id + " nodes>=18", ns.length >= 18);
+    ok(bp.id + " edges>=20", es.length >= 20);
+    ok(bp.id + " edges forward", es.every(function(e){
+      const a = nodeById(bp.id, e.from), c = nodeById(bp.id, e.to);
+      return !!a && !!c && a.tier < c.tier;
+    }));
+    ok(bp.id + " acyclic", hasCycle(bp.id) === false);
+    ok(bp.id + " has available", ns.some(function(n){ return statusOf(bp.id, n.id) === "available"; }));
+  });
+  DB = JSON.parse(snap);
+  const b = boundsOf(id);
+  ok("bounds positive", b.w > 1000 && b.h > 500);
+  const tf = '600 14px "PingFang SC","Microsoft YaHei",system-ui,sans-serif';
+  const longT = wrapPx("这是一个非常非常长的节点标题用来测试截断行为", 152, tf, 2);
+  ok("long title 2 lines", longT.length === 2);
+  ok("ellipsis on overflow", longT[1].indexOf("…") >= 0);
+  let overflow = 0;
+  BLUEPRINTS.forEach(function(bp){
+    nodesOf(bp.id).forEach(function(n){
+      const maxW = sizeOf(n).w - 34;
+      wrapPx(n.title, maxW, tf, 2).forEach(function(l){
+        _measure.font = tf;
+        if (_measure.measureText(l).width > maxW + 1) overflow++;
+      });
+    });
+  });
+  ok("no title overflows box", overflow === 0);
+  ok("ai default endpoint", aiConfig().baseURL === "https://api.deepseek.com");
+  ok("ai key empty by default", aiConfig().key === "");
+  ok("ai no-key message", aiErrorText(new Error("NO_KEY")).indexOf("API Key") >= 0);
+  ok("ai cors message", aiErrorText(new TypeError("Failed to fetch")).indexOf("跨域") >= 0);
+  const pass = res.filter(r => r.startsWith("PASS")).length;
+  const panel = document.createElement("pre");
+  panel.id = "selftest-result";
+  panel.style.cssText = "position:fixed;z-index:9999;left:8px;top:8px;background:#000;color:#0f0;font:11px monospace;padding:8px;max-height:90vh;overflow:auto";
+  panel.textContent = "SELFTEST " + pass + "/" + res.length + "\n" + res.join("\n");
+  document.body.appendChild(panel);
+  document.title = "SELFTEST " + pass + "/" + res.length;
+})();
+</script>
+</body>
+</html>

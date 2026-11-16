@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "exportedAt": "2026-11-16T00:00:00.000Z",
+  "blueprints": [
+    {
+      "doc": {
+        "id": "lp-rust-cli",
+        "title": "Rust CLI 学习路径",
+        "goal": "能独立写出并发布一个可安装的 Rust CLI 工具",
+        "nodes": [
+          {
+            "id": "lp-rust-basics",
+            "title": "Rust 基础语法",
+            "sub": "变量、类型、控制流、模块",
+            "type": "concept",
+            "desc": "能读懂并改写 100 行以内的 Rust 程序，不靠猜语法。",
+            "hours": 6,
+            "tier": 0,
+            "row": 0,
+            "resources": [
+              {
+                "label": "《Rust 程序设计语言》",
+                "url": "https://doc.rust-lang.org/book/"
+              }
+            ]
+          },
+          {
+            "id": "lp-rust-ownership",
+            "title": "所有权与借用",
+            "sub": "移动、引用、生命周期",
+            "type": "concept",
+            "desc": "能解释移动/借用/生命周期，并修掉常见的借用检查错误。",
+            "hours": 8,
+            "tier": 1,
+            "row": 0,
+            "resources": [
+              {
+                "label": "Rust Book · 所有权",
+                "url": "https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html"
+              }
+            ]
+          },
+          {
+            "id": "lp-rust-testing",
+            "title": "单元测试",
+            "sub": "断言、测试组织、覆盖率",
+            "type": "skill",
+            "desc": "能给一个模块写出 3 个以上有意义的单测。",
+            "hours": 3,
+            "tier": 1,
+            "row": 1.8,
+            "resources": [
+              {
+                "label": "Rust Book · 测试",
+                "url": "https://doc.rust-lang.org/book/ch11-00-testing.html"
+              }
+            ]
+          },
+          {
+            "id": "lp-rust-error",
+            "title": "错误处理",
+            "sub": "Result、?、自定义错误",
+            "type": "skill",
+            "desc": "能区分可恢复/不可恢复错误，并用 ? 和自定义错误类型组织代码。",
+            "hours": 3,
+            "tier": 2,
+            "row": 0,
+            "resources": [
+              {
+                "label": "Rust By Example · 错误处理",
+                "url": "https://doc.rust-lang.org/rust-by-example/error.html"
+              }
+            ]
+          },
+          {
+            "id": "lp-rust-async",
+            "title": "异步基础",
+            "sub": "Future、async/await、运行时",
+            "type": "concept",
+            "desc": "能解释 Future 的惰性执行，并写出不阻塞的并发任务。",
+            "hours": 6,
+            "tier": 2,
+            "row": 1.8,
+            "resources": [
+              {
+                "label": "Tokio 教程",
+                "url": "https://tokio.rs/tokio/tutorial"
+              }
+            ]
+          },
+          {
+            "id": "lp-rust-cli",
+            "title": "命令行参数",
+            "sub": "clap、子命令、帮助信息",
+            "type": "practice",
+            "desc": "用 clap 做出带子命令、帮助和错误提示的 CLI。",
+            "hours": 3,
+            "tier": 3,
+            "row": 0,
+            "resources": [
+              {
+                "label": "clap 文档",
+                "url": "https://docs.rs/clap/latest/clap/"
+              }
+            ]
+          },
+          {
+            "id": "lp-rust-io",
+            "title": "文件读写",
+            "sub": "std::fs、路径、错误",
+            "type": "practice",
+            "desc": "能安全读写文件，并处理不存在、权限不足等错误。",
+            "hours": 3,
+            "tier": 3,
+            "row": 1.8,
+            "resources": [
+              {
+                "label": "std::fs 文档",
+                "url": "https://doc.rust-lang.org/std/fs/"
+              }
+            ]
+          },
+          {
+            "id": "lp-rust-check",
+            "title": "阶段自测",
+            "sub": "闭卷 + 现场改 bug",
+            "type": "checkpoint",
+            "desc": "闭卷完成 10 道题，并现场修一个借用/错误处理 bug，正确率 ≥80%。",
+            "hours": 2,
+            "tier": 4,
+            "row": 0,
+            "resources": []
+          },
+          {
+            "id": "lp-rust-pack",
+            "title": "打包与发布",
+            "sub": "release 构建、README、分发",
+            "type": "practice",
+            "desc": "能打出 release 包，写清安装/使用/示例，并发布到可下载位置。",
+            "hours": 2,
+            "tier": 4,
+            "row": 1.8,
+            "resources": [
+              {
+                "label": "Cargo Book · 发布",
+                "url": "https://doc.rust-lang.org/cargo/reference/publishing.html"
+              }
+            ]
+          },
+          {
+            "id": "lp-rust-capstone",
+            "title": "CLI 工具",
+            "sub": "参数、文件、错误、测试",
+            "type": "project",
+            "desc": "做一个能读写文件、带参数解析和错误提示的 CLI，附 README 与测试。",
+            "hours": 12,
+            "tier": 5,
+            "row": 0,
+            "resources": []
+          },
+          {
+            "id": "lp-rust-ship",
+            "title": "发布 v1",
+            "sub": "可安装、可演示、有文档",
+            "type": "milestone",
+            "desc": "cargo install 可用，README 有安装与示例，CI 通过。",
+            "hours": 4,
+            "tier": 6,
+            "row": 0,
+            "resources": []
+          }
+        ],
+        "edges": [
+          { "id": "lp-rust-e1", "from": "lp-rust-basics", "to": "lp-rust-ownership", "kind": "hard" },
+          { "id": "lp-rust-e2", "from": "lp-rust-basics", "to": "lp-rust-testing", "kind": "soft" },
+          { "id": "lp-rust-e3", "from": "lp-rust-ownership", "to": "lp-rust-error", "kind": "hard" },
+          { "id": "lp-rust-e4", "from": "lp-rust-ownership", "to": "lp-rust-async", "kind": "hard" },
+          { "id": "lp-rust-e5", "from": "lp-rust-error", "to": "lp-rust-cli", "kind": "hard" },
+          { "id": "lp-rust-e6", "from": "lp-rust-error", "to": "lp-rust-io", "kind": "hard" },
+          { "id": "lp-rust-e7", "from": "lp-rust-cli", "to": "lp-rust-check", "kind": "hard" },
+          { "id": "lp-rust-e8", "from": "lp-rust-io", "to": "lp-rust-check", "kind": "hard" },
+          { "id": "lp-rust-e9", "from": "lp-rust-io", "to": "lp-rust-pack", "kind": "soft" },
+          { "id": "lp-rust-e10", "from": "lp-rust-async", "to": "lp-rust-capstone", "kind": "hard" },
+          { "id": "lp-rust-e11", "from": "lp-rust-check", "to": "lp-rust-capstone", "kind": "hard" },
+          { "id": "lp-rust-e12", "from": "lp-rust-pack", "to": "lp-rust-capstone", "kind": "hard" },
+          { "id": "lp-rust-e13", "from": "lp-rust-capstone", "to": "lp-rust-ship", "kind": "hard" }
+        ]
+      },
+      "progress": {
+        "nodes": {
+          "lp-rust-basics": {
+            "mastery": 4,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "lp-rust-ownership": {
+            "mastery": 3,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "lp-rust-testing": {
+            "mastery": 1,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "lp-rust-error": {
+            "mastery": 2,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "lp-rust-async": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "lp-rust-cli": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "lp-rust-io": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "lp-rust-check": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "lp-rust-pack": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "lp-rust-capstone": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          },
+          "lp-rust-ship": {
+            "mastery": 0,
+            "note": "",
+            "dueAt": null,
+            "intervalDays": 0,
+            "evidence": { "self": false, "quiz": false, "artifact": false, "ai": false }
+          }
+        },
+        "pos": {}
+      }
+    }
+  ]
+}
